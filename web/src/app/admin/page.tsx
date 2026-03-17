@@ -1,12 +1,17 @@
 import { AppShell } from "@/components/app-shell";
 import { Pill, SectionCard } from "@/components/ui";
-import { adminActions, attendanceBoard } from "@/lib/mock-data";
+import { getAdminPageData, getDashboardData } from "@/lib/data";
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const { navItems, nextMatch } = await getDashboardData();
+  const { adminActions, attendanceBoard } = await getAdminPageData();
+
   return (
     <AppShell
       title="Panel admin"
       subtitle="Vista operativa para abrir convocatoria, mover jugadores entre lista y cerrar el partido del martes."
+      navItems={navItems}
+      nextMatch={nextMatch}
     >
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <SectionCard eyebrow="Acciones" title="Control semanal">

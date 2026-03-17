@@ -1,15 +1,24 @@
 import Link from "next/link";
 import { ReactNode } from "react";
 
-import { navItems, nextMatch } from "@/lib/mock-data";
+import { navItemsSeed, nextMatchSeed } from "@/lib/seed-data";
+import type { NavItem, NextMatch } from "@/types/domain";
 
 type AppShellProps = {
   children: ReactNode;
   title: string;
   subtitle: string;
+  navItems?: NavItem[];
+  nextMatch?: NextMatch;
 };
 
-export function AppShell({ children, title, subtitle }: AppShellProps) {
+export function AppShell({
+  children,
+  title,
+  subtitle,
+  navItems = navItemsSeed,
+  nextMatch = nextMatchSeed,
+}: AppShellProps) {
   return (
     <main className="grain min-h-screen px-4 py-5 sm:px-6 lg:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">

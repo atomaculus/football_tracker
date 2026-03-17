@@ -4,11 +4,13 @@ import { useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { Pill, SectionCard } from "@/components/ui";
-import { availabilityOptions, nextMatch } from "@/lib/mock-data";
+import { availabilityOptionsSeed, nextMatchSeed } from "@/lib/seed-data";
 
 export default function ConfirmPage() {
   const [selected, setSelected] = useState("Voy");
-  const selectedOption = availabilityOptions.find((option) => option.label === selected);
+  const selectedOption = availabilityOptionsSeed.find(
+    (option) => option.label === selected,
+  );
 
   return (
     <AppShell
@@ -18,7 +20,7 @@ export default function ConfirmPage() {
       <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <SectionCard eyebrow="Respuesta semanal" title="Elegi tu estado">
           <div className="grid gap-3">
-            {availabilityOptions.map((option) => {
+            {availabilityOptionsSeed.map((option) => {
               const isSelected = selected === option.label;
               const selectedStyle =
                 option.tone === "accent"
@@ -97,7 +99,8 @@ export default function ConfirmPage() {
               <p className="mt-2 text-lg font-extrabold">{selected}</p>
               <p className="mt-1 text-white/70">{selectedOption?.description}</p>
               <p className="mt-3 text-white/70">
-                {nextMatch.dateLabel} · {nextMatch.timeLabel} · {nextMatch.venue}
+                {nextMatchSeed.dateLabel} · {nextMatchSeed.timeLabel} ·{" "}
+                {nextMatchSeed.venue}
               </p>
             </div>
           </div>

@@ -1,12 +1,17 @@
 import { AppShell } from "@/components/app-shell";
 import { SectionCard } from "@/components/ui";
-import { historyMatches, leaderboard } from "@/lib/mock-data";
+import { getDashboardData, getHistoryPageData } from "@/lib/data";
 
-export default function HistoryPage() {
+export default async function HistoryPage() {
+  const { navItems, nextMatch } = await getDashboardData();
+  const { historyMatches, leaderboard } = await getHistoryPageData();
+
   return (
     <AppShell
       title="Historial"
       subtitle="Resumen de partidos anteriores, resultados y rendimiento acumulado del grupo."
+      navItems={navItems}
+      nextMatch={nextMatch}
     >
       <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <SectionCard eyebrow="Ultimos partidos" title="Fechas recientes">

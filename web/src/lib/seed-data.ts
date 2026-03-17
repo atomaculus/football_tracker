@@ -1,4 +1,17 @@
-export const nextMatch = {
+import type {
+  AdminAction,
+  AttendanceEntry,
+  AvailabilityOption,
+  ClusterPlayer,
+  HistoryMatch,
+  LeaderboardEntry,
+  NavItem,
+  NextMatch,
+  Scorer,
+  Team,
+} from "@/types/domain";
+
+export const nextMatchSeed: NextMatch = {
   dateLabel: "Martes 25 de marzo",
   timeLabel: "21:00",
   venue: "Open Gallo",
@@ -11,7 +24,7 @@ export const nextMatch = {
   missing: 3,
 };
 
-export const attendanceBoard = [
+export const attendanceBoardSeed: AttendanceEntry[] = [
   { name: "Lucas Lopez", status: "Titular", detail: "Confirmo lunes 08:07" },
   { name: "Mariano Salama", status: "Titular", detail: "Confirmo lunes 08:11" },
   { name: "Ruben Mel", status: "Titular", detail: "Confirmo lunes 08:14" },
@@ -20,7 +33,7 @@ export const attendanceBoard = [
   { name: "Nico Arquero", status: "No va", detail: "Baja avisada 16:40" },
 ];
 
-export const availabilityOptions = [
+export const availabilityOptionsSeed: AvailabilityOption[] = [
   {
     label: "Voy",
     tone: "lime",
@@ -38,7 +51,7 @@ export const availabilityOptions = [
   },
 ];
 
-export const teams = [
+export const teamsSeed: Team[] = [
   {
     name: "Verdes",
     color: "bg-lime text-foreground",
@@ -69,7 +82,7 @@ export const teams = [
   },
 ];
 
-export const scorers = [
+export const scorersSeed: Scorer[] = [
   { name: "Ruben Mel", goals: 3, team: "Verdes" },
   { name: "Lucas Lopez", goals: 2, team: "Verdes" },
   { name: "Mariano Salama", goals: 2, team: "Naranjas" },
@@ -77,7 +90,7 @@ export const scorers = [
   { name: "Rodri", goals: 1, team: "Naranjas" },
 ];
 
-export const historyMatches = [
+export const historyMatchesSeed: HistoryMatch[] = [
   {
     date: "18 de marzo",
     result: "Verdes 7 - 5 Naranjas",
@@ -98,14 +111,14 @@ export const historyMatches = [
   },
 ];
 
-export const leaderboard = [
+export const leaderboardSeed: LeaderboardEntry[] = [
   { name: "Ruben Mel", presences: 33, goals: 14, diff: "+14" },
   { name: "Esteban Larre", presences: 7, goals: 4, diff: "+4" },
   { name: "Fidel", presences: 7, goals: 3, diff: "+1" },
   { name: "Guido Marani", presences: 3, goals: 2, diff: "+2" },
 ];
 
-export const adminActions = [
+export const adminActionsSeed: AdminAction[] = [
   "Abrir convocatoria del martes",
   "Mover jugador a suplentes",
   "Cerrar lista final",
@@ -114,7 +127,7 @@ export const adminActions = [
   "Aplicar override por baja tardia",
 ];
 
-export const clusterPlayers = [
+export const clusterPlayersSeed: ClusterPlayer[] = [
   { name: "Lucas Lopez", role: "Jugador", status: "Activo" },
   { name: "Mariano Salama", role: "Admin", status: "Activo" },
   { name: "Ruben Mel", role: "Jugador", status: "Activo" },
@@ -129,7 +142,7 @@ export const clusterPlayers = [
   { name: "Nico Arquero", role: "Jugador", status: "Inactivo" },
 ];
 
-export const navItems = [
+export const navItemsSeed: NavItem[] = [
   { href: "/", label: "Inicio" },
   { href: "/confirmar", label: "Confirmar" },
   { href: "/partido", label: "Partido" },

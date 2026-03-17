@@ -2,13 +2,18 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { Pill, SectionCard } from "@/components/ui";
-import { attendanceBoard, leaderboard, nextMatch } from "@/lib/mock-data";
+import { getDashboardData } from "@/lib/data";
 
-export default function Home() {
+export default async function Home() {
+  const { attendanceBoard, leaderboard, navItems, nextMatch } =
+    await getDashboardData();
+
   return (
     <AppShell
       title="Inicio del martes"
       subtitle="Vista principal para entrar rapido a confirmar asistencia, revisar si el partido ya esta armado y consultar el pulso de la semana."
+      navItems={navItems}
+      nextMatch={nextMatch}
     >
       <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <SectionCard eyebrow="Accion rapida" title="Tu estado para esta fecha">
@@ -80,13 +85,13 @@ export default function Home() {
       <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <SectionCard eyebrow="Atajos" title="Navegacion del MVP">
           <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                { href: "/confirmar", label: "Confirmar asistencia" },
-                { href: "/partido", label: "Partido y equipos" },
-                { href: "/historial", label: "Historial" },
-                { href: "/jugadores", label: "Jugadores del grupo" },
-                { href: "/admin", label: "Panel admin" },
-              ].map((item) => (
+            {[
+              { href: "/confirmar", label: "Confirmar asistencia" },
+              { href: "/partido", label: "Partido y equipos" },
+              { href: "/historial", label: "Historial" },
+              { href: "/jugadores", label: "Jugadores del grupo" },
+              { href: "/admin", label: "Panel admin" },
+            ].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
