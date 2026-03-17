@@ -60,6 +60,8 @@ function mapMatchStatus(status: string) {
       return "Lista cerrada";
     case "played":
       return "Partido cargado";
+    case "suspended":
+      return "Partido suspendido";
     case "cancelled":
       return "Suspendido";
     default:
@@ -71,13 +73,9 @@ function mapPlayerRole(role: string) {
   return role === "admin" ? "Admin" : "Jugador";
 }
 
-function mapPlayerStatus(isActive: boolean, isGuest: boolean) {
+function mapPlayerStatus(isActive: boolean) {
   if (!isActive) {
     return "Inactivo";
-  }
-
-  if (isGuest) {
-    return "Invitable";
   }
 
   return "Activo";
@@ -160,7 +158,7 @@ async function getPlayersFromSupabase() {
       id: player.id,
       name: player.full_name,
       role: mapPlayerRole(player.role),
-      status: mapPlayerStatus(player.is_active, player.is_guest),
+      status: mapPlayerStatus(player.is_active),
     }),
   );
 }
@@ -180,7 +178,7 @@ async function getUpcomingMatchFromSupabase() {
     .select(
       "id, match_date, location, start_time, target_players, fallback_players, format_label, status",
     )
-    .in("status", ["scheduled", "open", "closed"])
+    .in("status", ["scheduled", "open", "closed", "suspended"])
     .order("match_date", { ascending: true })
     .limit(1)
     .maybeSingle();

@@ -38,7 +38,7 @@ create table if not exists public.matches (
   fallback_players integer not null default 12,
   format_label text not null default '7v7',
   status text not null default 'scheduled'
-    check (status in ('scheduled', 'open', 'closed', 'played', 'cancelled')),
+    check (status in ('scheduled', 'open', 'closed', 'played', 'cancelled', 'suspended')),
   notes text,
   created_at timestamptz not null default now()
 );

@@ -80,6 +80,7 @@ Si mas adelante quieren escalar, esta base sigue siendo razonable.
   - `closed`
   - `played`
   - `cancelled`
+  - `suspended`
 - `notes`
 
 ### `availability_responses`
@@ -163,6 +164,7 @@ La recomendacion practica es que el MVP empiece a operar con datos nuevos desde 
 - guardar siempre timestamp de respuesta
 - no permitir goles para jugadores fuera de ese partido
 - no permitir cerrar partido sin equipos definidos
+- validar formatos reales: `14 => 7v7`, `12 => 6v6`, `<12 => suspended` salvo override admin
 
 ### Manuales al inicio
 

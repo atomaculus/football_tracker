@@ -96,19 +96,19 @@ export const scorersSeed: Scorer[] = [
 export const historyMatchesSeed: HistoryMatch[] = [
   {
     date: "18 de marzo",
-    result: "Verdes 7 - 5 Naranjas",
+    result: "Verdes 4 - 3 Naranjas",
     attendance: "14 jugadores",
-    notes: "Partido completo, sin bajas tardias",
+    notes: "Partido completo 7v7, sin bajas tardias",
   },
   {
     date: "11 de marzo",
-    result: "Verdes 6 - 6 Naranjas",
+    result: "Verdes 3 - 3 Naranjas",
     attendance: "12 jugadores",
     notes: "Se jugo 6v6 por dos ausencias",
   },
   {
     date: "4 de marzo",
-    result: "Naranjas 8 - 6 Verdes",
+    result: "Naranjas 5 - 4 Verdes",
     attendance: "14 jugadores",
     notes: "Dos suplentes terminaron entrando",
   },
@@ -128,6 +128,7 @@ export const adminActionsSeed: AdminAction[] = [
   "Asignar equipos manualmente",
   "Cargar resultado y goleadores",
   "Aplicar override por baja tardia",
+  "Suspender partido por clima o falta de quorum",
 ];
 
 export const clusterPlayersSeed: ClusterPlayer[] = [
@@ -140,8 +141,8 @@ export const clusterPlayersSeed: ClusterPlayer[] = [
   { id: "seed-guido-marani", name: "Guido Marani", role: "Jugador", status: "Activo" },
   { id: "seed-guido-muniz", name: "Guido Muniz", role: "Jugador", status: "Activo" },
   { id: "seed-fabrizio-saban", name: "Fabrizio Saban", role: "Jugador", status: "Activo" },
-  { id: "seed-atilio", name: "Atilio", role: "Jugador", status: "Invitable" },
-  { id: "seed-franco", name: "Franco", role: "Jugador", status: "Invitable" },
+  { id: "seed-atilio", name: "Atilio", role: "Jugador", status: "Activo" },
+  { id: "seed-franco", name: "Franco", role: "Jugador", status: "Activo" },
   { id: "seed-nico-arquero", name: "Nico Arquero", role: "Jugador", status: "Inactivo" },
 ];
 

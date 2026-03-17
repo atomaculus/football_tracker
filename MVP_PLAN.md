@@ -72,18 +72,20 @@ Cada martes hay que resolver rapido:
    - orden de prioridad visible
    - motivo de prioridad resumido
    - cambios de ultimo momento
+   - estado `Suspendido` si no se llega al minimo de 12 o si se cancela por clima
 
 3. `Asistencia e historial`
    - asistencia confirmada
    - asistencia real
    - bajas tardias
    - no-show
-   - invitados
+   - estado final del partido (`jugado` o `suspendido`)
 
 4. `Equipos`
    - dos equipos por partido
    - asignacion manual en MVP
    - historial de equipos por fecha
+   - formatos validos: `7v7` con 14 o `6v6` con 12
 
 5. `Resultado y goles`
    - marcador final
@@ -128,6 +130,7 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
 2. Los jugadores responden si van o no van.
 3. El admin ve la lista ordenada y arma titulares/suplentes.
 4. El martes se cierran cambios y se define la lista final.
+   Si no se llega a 12 jugadores o el clima obliga a frenarlo, la fecha se marca como suspendida.
 5. Se cargan equipos.
 6. Despues del partido se registra resultado y goles.
 7. La app actualiza historial y estadisticas.
@@ -153,6 +156,7 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
    - titulares
    - suplentes
    - bajas
+   - aviso de partido suspendido si no se juega
 
 5. `Partido`
    - fecha, cancha, hora
@@ -180,6 +184,7 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
    - cerrar convocatoria
    - mover jugadores
    - cargar resultado
+   - suspender fecha por clima o por no llegar al minimo
 
 ## Features adicionales recomendadas para MVP+
 
@@ -192,6 +197,13 @@ No las pondria en la primera entrega, pero si las dejaria disenadas:
 - deuda o registro de pago de cancha
 - encuesta post partido
 - invitacion por QR o link para sumar jugadores nuevos al grupo
+
+## Reglas operativas fijas del grupo
+
+- nunca deberia existir una fecha desbalanceada tipo `7 vs 5`
+- con 14 jugadores el formato real es `7v7`
+- con 12 jugadores el formato real es `6v6`
+- con menos de 12 la fecha deberia quedar `Suspendida`, salvo excepcion manual
 
 ## Criterios de exito del MVP
 

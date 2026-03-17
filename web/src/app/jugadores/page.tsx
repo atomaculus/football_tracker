@@ -25,15 +25,7 @@ export default async function PlayersPage() {
                   <p className="font-extrabold">{player.name}</p>
                   <p className="text-sm text-muted">{player.role}</p>
                 </div>
-                <Pill
-                  tone={
-                    player.status === "Activo"
-                      ? "lime"
-                      : player.status === "Inactivo"
-                        ? "accent"
-                        : "default"
-                  }
-                >
+                <Pill tone={player.status === "Activo" ? "lime" : "accent"}>
                   {player.status}
                 </Pill>
               </div>
