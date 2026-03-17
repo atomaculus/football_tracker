@@ -9,11 +9,6 @@ export type AvailabilityActionState = {
   status: "idle" | "success" | "error" | "demo";
 };
 
-export const initialAvailabilityActionState: AvailabilityActionState = {
-  message: "",
-  status: "idle",
-};
-
 export async function submitAvailabilityResponse(
   _previousState: AvailabilityActionState,
   formData: FormData,

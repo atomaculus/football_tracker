@@ -3,12 +3,14 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
-import {
-  initialAvailabilityActionState,
-  submitAvailabilityResponse,
-} from "@/app/confirmar/actions";
+import { submitAvailabilityResponse } from "@/app/confirmar/actions";
 import { Pill, SectionCard } from "@/components/ui";
 import type { AttendanceEntry, AvailabilityOption, ClusterPlayer } from "@/types/domain";
+
+const initialAvailabilityActionState = {
+  message: "",
+  status: "idle",
+} as const;
 
 function SubmitButton({ mode }: { mode: "demo" | "supabase" }) {
   const { pending } = useFormStatus();
