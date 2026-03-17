@@ -8,6 +8,7 @@ import { availabilityOptions, nextMatch } from "@/lib/mock-data";
 
 export default function ConfirmPage() {
   const [selected, setSelected] = useState("Voy");
+  const selectedOption = availabilityOptions.find((option) => option.label === selected);
 
   return (
     <AppShell
@@ -19,6 +20,12 @@ export default function ConfirmPage() {
           <div className="grid gap-3">
             {availabilityOptions.map((option) => {
               const isSelected = selected === option.label;
+              const selectedStyle =
+                option.tone === "accent"
+                  ? "border-accent bg-accent text-white"
+                  : option.tone === "lime"
+                    ? "border-lime bg-[#20422f] text-white"
+                    : "border-foreground bg-foreground text-white";
 
               return (
                 <button
@@ -27,7 +34,7 @@ export default function ConfirmPage() {
                   onClick={() => setSelected(option.label)}
                   className={`rounded-[1.5rem] border p-5 text-left transition ${
                     isSelected
-                      ? "border-foreground bg-foreground text-white"
+                      ? selectedStyle
                       : "border-line bg-surface-strong hover:border-foreground"
                   }`}
                 >
@@ -56,6 +63,21 @@ export default function ConfirmPage() {
               );
             })}
           </div>
+
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-line bg-surface-strong p-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
+                Respuesta actual
+              </p>
+              <p className="mt-2 text-lg font-extrabold">{selected}</p>
+            </div>
+            <button
+              type="button"
+              className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-strong"
+            >
+              Guardar respuesta
+            </button>
+          </div>
         </SectionCard>
 
         <SectionCard eyebrow="Contexto" title="Como impacta tu respuesta" dark>
@@ -73,6 +95,7 @@ export default function ConfirmPage() {
                 Estado elegido
               </p>
               <p className="mt-2 text-lg font-extrabold">{selected}</p>
+              <p className="mt-1 text-white/70">{selectedOption?.description}</p>
               <p className="mt-3 text-white/70">
                 {nextMatch.dateLabel} · {nextMatch.timeLabel} · {nextMatch.venue}
               </p>

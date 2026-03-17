@@ -1,0 +1,13 @@
+full_name,nickname,phone,is_goalkeeper,is_guest,is_active,role
+Lucas Lopez,Lucas,,false,false,true,player
+Mariano Salama,Mariano,,false,false,true,admin
+Ruben Mel,Ruben,,false,false,true,player
+Fidel,Fidel,,false,false,true,player
+Pacho,Pacho,,false,false,true,player
+Esteban Larre,Esteban,,false,false,true,player
+Guido Marani,Guido Marani,,false,false,true,player
+Guido Muniz,Guido Muniz,,false,false,true,player
+Fabrizio Saban,Fabrizio,,false,false,true,player
+Atilio,Atilio,,false,false,true,player
+Franco,Franco,,false,false,true,player
+Nico Arquero,Nico Arquero,,true,false,false,player

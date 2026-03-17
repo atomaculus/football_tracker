@@ -185,6 +185,7 @@ La recomendacion practica es que el MVP empiece a operar con datos nuevos desde 
 - jugadores
 - partidos
 - confirmacion de asistencia
+- seed inicial de jugadores sin historial obligatorio
 
 ### Fase 2
 
@@ -224,6 +225,7 @@ Primer sprint de construccion:
 - si intentan automatizar todas las reglas del Excel desde el inicio, el proyecto se frena
 - si el historial viejo se vuelve requisito estricto para salir, se retrasa la validacion
 - si no hay un admin claramente responsable, la operacion semanal se desordena
+- si se intenta importar estadisticas historicas antes de validar la operacion semanal, se pierde foco
 
 ## Decisiones recomendadas ya
 
