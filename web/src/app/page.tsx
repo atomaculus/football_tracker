@@ -29,7 +29,7 @@ export default function Home() {
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link
                   href="/confirmar"
-                  className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background transition hover:bg-surface-dark"
+                  className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-white transition hover:bg-surface-dark"
                 >
                   Confirmar asistencia
                 </Link>
@@ -80,12 +80,13 @@ export default function Home() {
       <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <SectionCard eyebrow="Atajos" title="Navegacion del MVP">
           <div className="grid gap-3 sm:grid-cols-2">
-            {[
-              { href: "/confirmar", label: "Confirmar asistencia" },
-              { href: "/partido", label: "Partido y equipos" },
-              { href: "/historial", label: "Historial" },
-              { href: "/admin", label: "Panel admin" },
-            ].map((item) => (
+              {[
+                { href: "/confirmar", label: "Confirmar asistencia" },
+                { href: "/partido", label: "Partido y equipos" },
+                { href: "/historial", label: "Historial" },
+                { href: "/jugadores", label: "Jugadores del grupo" },
+                { href: "/admin", label: "Panel admin" },
+              ].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

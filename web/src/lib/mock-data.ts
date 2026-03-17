@@ -114,10 +114,26 @@ export const adminActions = [
   "Aplicar override por baja tardia",
 ];
 
+export const clusterPlayers = [
+  { name: "Lucas Lopez", role: "Jugador", status: "Activo" },
+  { name: "Mariano Salama", role: "Admin", status: "Activo" },
+  { name: "Ruben Mel", role: "Jugador", status: "Activo" },
+  { name: "Fidel", role: "Jugador", status: "Activo" },
+  { name: "Pacho", role: "Jugador", status: "Activo" },
+  { name: "Esteban Larre", role: "Jugador", status: "Activo" },
+  { name: "Guido Marani", role: "Jugador", status: "Activo" },
+  { name: "Guido Muniz", role: "Jugador", status: "Activo" },
+  { name: "Fabrizio Saban", role: "Jugador", status: "Activo" },
+  { name: "Atilio", role: "Jugador", status: "Invitable" },
+  { name: "Franco", role: "Jugador", status: "Invitable" },
+  { name: "Nico Arquero", role: "Jugador", status: "Inactivo" },
+];
+
 export const navItems = [
   { href: "/", label: "Inicio" },
   { href: "/confirmar", label: "Confirmar" },
   { href: "/partido", label: "Partido" },
   { href: "/historial", label: "Historial" },
+  { href: "/jugadores", label: "Jugadores" },
   { href: "/admin", label: "Admin" },
 ];

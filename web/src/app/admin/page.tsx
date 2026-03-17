@@ -12,12 +12,21 @@ export default function AdminPage() {
         <SectionCard eyebrow="Acciones" title="Control semanal">
           <div className="grid gap-3 sm:grid-cols-2">
             {adminActions.map((action) => (
-              <button
+              <div
                 key={action}
-                className="rounded-[1.4rem] border border-line bg-surface-strong p-4 text-left text-sm font-extrabold uppercase tracking-[0.08em] transition hover:border-foreground"
+                className="rounded-[1.4rem] border border-line bg-surface-strong p-4"
               >
-                {action}
-              </button>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-extrabold uppercase tracking-[0.08em]">
+                    {action}
+                  </p>
+                  <Pill>Backlog</Pill>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-muted">
+                  Esta accion queda lista para conectar en la siguiente etapa con Supabase y
+                  permisos de administrador.
+                </p>
+              </div>
             ))}
           </div>
         </SectionCard>

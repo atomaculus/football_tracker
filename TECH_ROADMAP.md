@@ -46,6 +46,21 @@ Si mas adelante quieren escalar, esta base sigue siendo razonable.
 - `is_active`
 - `created_at`
 
+### `player_invites`
+
+- `id`
+- `token`
+- `created_by_player_id`
+- `invite_type`
+  - `qr`
+  - `link`
+- `status`
+  - `active`
+  - `used`
+  - `expired`
+- `expires_at`
+- `created_at`
+
 ### `seasons`
 
 - `id`
@@ -189,6 +204,8 @@ La recomendacion practica es que el MVP empiece a operar con datos nuevos desde 
 - importador de Excel
 - pulido
 - beta cerrada con el grupo real
+- listado completo de jugadores del grupo
+- invitacion por QR o link para nuevos jugadores
 
 ## Sprint 1 recomendado
 

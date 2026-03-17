@@ -164,13 +164,18 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
    - partidos anteriores
    - detalle por fecha
 
-7. `Mi perfil`
+7. `Jugadores`
+   - lista completa del grupo
+   - estado de cada jugador
+   - admins visibles
+
+8. `Mi perfil`
    - presencias
    - goles
    - partidos jugados
    - rendimiento simple
 
-8. `Admin`
+9. `Admin`
    - crear partido
    - cerrar convocatoria
    - mover jugadores
@@ -186,6 +191,7 @@ No las pondria en la primera entrega, pero si las dejaria disenadas:
 - ranking de companeros mas frecuentes
 - deuda o registro de pago de cancha
 - encuesta post partido
+- invitacion por QR o link para sumar jugadores nuevos al grupo
 
 ## Criterios de exito del MVP
 
