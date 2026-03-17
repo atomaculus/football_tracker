@@ -38,3 +38,10 @@ Si no estan definidas, la app usa seed local.
 - `/historial`
 - `/jugadores`
 - `/admin`
+
+## Estado del flujo actual
+
+- `Jugadores` ya puede leer desde `players` en Supabase
+- `Inicio` y `Admin` pueden mostrar el proximo partido y respuestas reales si existe un match abierto/programado
+- `Confirmar` ya tiene formulario listo para persistir `availability_responses`
+- mientras no haya credenciales, todo sigue funcionando en modo demo

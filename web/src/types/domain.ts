@@ -24,6 +24,7 @@ export type AttendanceEntry = {
 
 export type AvailabilityOption = {
   label: string;
+  value: "going" | "backup" | "not_going";
   tone: "lime" | "sand" | "accent";
   description: string;
 };
@@ -58,9 +59,18 @@ export type LeaderboardEntry = {
 export type AdminAction = string;
 
 export type ClusterPlayer = {
+  id: string;
   name: string;
   role: string;
   status: string;
+};
+
+export type AvailabilityPageData = {
+  attendanceBoard: AttendanceEntry[];
+  availabilityOptions: AvailabilityOption[];
+  currentMode: "demo" | "supabase";
+  matchId: string;
+  players: ClusterPlayer[];
 };
 
 export type DashboardData = {

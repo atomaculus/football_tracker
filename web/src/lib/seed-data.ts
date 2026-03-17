@@ -36,16 +36,19 @@ export const attendanceBoardSeed: AttendanceEntry[] = [
 export const availabilityOptionsSeed: AvailabilityOption[] = [
   {
     label: "Voy",
+    value: "going",
     tone: "lime",
     description: "Me sumo al partido y entro en la lista de esta semana.",
   },
   {
     label: "Suplente",
+    value: "backup",
     tone: "sand",
     description: "Puedo jugar si falta gente o se cae alguno a ultimo momento.",
   },
   {
     label: "No voy",
+    value: "not_going",
     tone: "accent",
     description: "Me bajo de esta fecha y libero el cupo.",
   },
@@ -128,18 +131,18 @@ export const adminActionsSeed: AdminAction[] = [
 ];
 
 export const clusterPlayersSeed: ClusterPlayer[] = [
-  { name: "Lucas Lopez", role: "Jugador", status: "Activo" },
-  { name: "Mariano Salama", role: "Admin", status: "Activo" },
-  { name: "Ruben Mel", role: "Jugador", status: "Activo" },
-  { name: "Fidel", role: "Jugador", status: "Activo" },
-  { name: "Pacho", role: "Jugador", status: "Activo" },
-  { name: "Esteban Larre", role: "Jugador", status: "Activo" },
-  { name: "Guido Marani", role: "Jugador", status: "Activo" },
-  { name: "Guido Muniz", role: "Jugador", status: "Activo" },
-  { name: "Fabrizio Saban", role: "Jugador", status: "Activo" },
-  { name: "Atilio", role: "Jugador", status: "Invitable" },
-  { name: "Franco", role: "Jugador", status: "Invitable" },
-  { name: "Nico Arquero", role: "Jugador", status: "Inactivo" },
+  { id: "seed-lucas-lopez", name: "Lucas Lopez", role: "Jugador", status: "Activo" },
+  { id: "seed-mariano-salama", name: "Mariano Salama", role: "Admin", status: "Activo" },
+  { id: "seed-ruben-mel", name: "Ruben Mel", role: "Jugador", status: "Activo" },
+  { id: "seed-fidel", name: "Fidel", role: "Jugador", status: "Activo" },
+  { id: "seed-pacho", name: "Pacho", role: "Jugador", status: "Activo" },
+  { id: "seed-esteban-larre", name: "Esteban Larre", role: "Jugador", status: "Activo" },
+  { id: "seed-guido-marani", name: "Guido Marani", role: "Jugador", status: "Activo" },
+  { id: "seed-guido-muniz", name: "Guido Muniz", role: "Jugador", status: "Activo" },
+  { id: "seed-fabrizio-saban", name: "Fabrizio Saban", role: "Jugador", status: "Activo" },
+  { id: "seed-atilio", name: "Atilio", role: "Jugador", status: "Invitable" },
+  { id: "seed-franco", name: "Franco", role: "Jugador", status: "Invitable" },
+  { id: "seed-nico-arquero", name: "Nico Arquero", role: "Jugador", status: "Inactivo" },
 ];
 
 export const navItemsSeed: NavItem[] = [

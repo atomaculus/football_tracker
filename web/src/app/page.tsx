@@ -25,7 +25,7 @@ export default async function Home() {
                     Proximo partido
                   </p>
                   <p className="mt-2 text-2xl font-black">
-                    {nextMatch.dateLabel} · {nextMatch.timeLabel}
+                    {nextMatch.dateLabel} {" · "} {nextMatch.timeLabel}
                   </p>
                   <p className="mt-1 text-sm text-muted">{nextMatch.venue}</p>
                 </div>
@@ -68,7 +68,7 @@ export default async function Home() {
           <div className="space-y-3">
             {attendanceBoard.map((player) => (
               <div
-                key={player.name}
+                key={`${player.name}-${player.detail}`}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-white/10 bg-white/6 px-4 py-4"
               >
                 <div>

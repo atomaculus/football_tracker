@@ -18,7 +18,7 @@ export default async function PlayersPage() {
           <div className="space-y-3">
             {clusterPlayers.map((player) => (
               <div
-                key={player.name}
+                key={player.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-line bg-surface-strong px-4 py-4"
               >
                 <div>

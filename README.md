@@ -28,6 +28,8 @@ Hoy el proyecto tiene:
   - jugadores
   - admin
 - capa de datos preparada para Supabase
+- lectura de jugadores y proximo partido desde Supabase cuando hay credenciales
+- formulario de confirmacion listo para persistir asistencia en Supabase
 - fallback local con seed data
 - schema SQL inicial para Supabase
 - seed/template de jugadores
@@ -108,3 +110,4 @@ Commits principales hasta ahora:
 - `d8b75a1` Refine MVP UX and add players view
 - `a391b3b` Add schema and player seed template
 - `312d880` Prepare web app for Supabase data layer
+- siguiente commit: confirmacion preparada para persistencia y dashboard listo para leer Supabase
