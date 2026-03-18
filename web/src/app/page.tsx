@@ -5,7 +5,7 @@ import { Pill, SectionCard } from "@/components/ui";
 import { getDashboardData } from "@/lib/data";
 
 export default async function Home() {
-  const { attendanceBoard, leaderboard, navItems, nextMatch } =
+  const { attendanceBoard, laundryDuty, leaderboard, navItems, nextMatch } =
     await getDashboardData();
 
   return (
@@ -124,6 +124,49 @@ export default async function Home() {
                 <span className="text-accent-strong">{player.diff}</span>
               </div>
             ))}
+          </div>
+        </SectionCard>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <SectionCard eyebrow="Logistica" title="Encargado de camisetas">
+          <div className="rounded-[1.5rem] border border-line bg-surface-strong p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
+                  Asignacion actual
+                </p>
+                <p className="mt-2 text-2xl font-black">{laundryDuty.assigneeName}</p>
+                <p className="mt-2 text-sm leading-6 text-muted">{laundryDuty.notes}</p>
+              </div>
+              <Pill tone="lime">{laundryDuty.status}</Pill>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[1.2rem] bg-[#f1ead8] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">Modo</p>
+                <p className="mt-2 text-lg font-black capitalize">
+                  {laundryDuty.assignmentMode}
+                </p>
+              </div>
+              <div className="rounded-[1.2rem] bg-[#dae8db] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">Entrega</p>
+                <p className="mt-2 text-lg font-black">{laundryDuty.dueLabel}</p>
+              </div>
+            </div>
+          </div>
+        </SectionCard>
+
+        <SectionCard eyebrow="Regla sugerida" title="Como conviene resolverlo" dark>
+          <div className="space-y-4 text-sm leading-6 text-white/78">
+            <p>
+              Para ustedes conviene arrancar por turnos, no al azar. Asi todos cargan con
+              las camisetas de forma pareja y se evita repetir a uno que ya las llevo hace
+              poco.
+            </p>
+            <p>
+              La version admin puede igual ofrecer un override manual para reasignar si el
+              encargado de esa semana falta o se baja a ultimo momento.
+            </p>
           </div>
         </SectionCard>
       </section>

@@ -4,7 +4,7 @@ import { getAdminPageData, getDashboardData } from "@/lib/data";
 
 export default async function AdminPage() {
   const { navItems, nextMatch } = await getDashboardData();
-  const { adminActions, attendanceBoard } = await getAdminPageData();
+  const { adminActions, attendanceBoard, laundryDuty } = await getAdminPageData();
 
   return (
     <AppShell
@@ -52,6 +52,48 @@ export default async function AdminPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </SectionCard>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <SectionCard eyebrow="Camisetas" title="Encargado de lavado">
+          <div className="rounded-[1.5rem] border border-line bg-surface-strong p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
+                  Asignado esta semana
+                </p>
+                <p className="mt-2 text-2xl font-black">{laundryDuty.assigneeName}</p>
+                <p className="mt-2 text-sm leading-6 text-muted">{laundryDuty.notes}</p>
+              </div>
+              <Pill tone="lime">{laundryDuty.status}</Pill>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[1.2rem] bg-[#f1ead8] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">Modo</p>
+                <p className="mt-2 text-lg font-black capitalize">
+                  {laundryDuty.assignmentMode}
+                </p>
+              </div>
+              <div className="rounded-[1.2rem] bg-[#dae8db] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">Entrega</p>
+                <p className="mt-2 text-lg font-black">{laundryDuty.dueLabel}</p>
+              </div>
+            </div>
+          </div>
+        </SectionCard>
+
+        <SectionCard eyebrow="Backlog" title="Regla operativa" dark>
+          <div className="space-y-4 text-sm leading-6 text-white/78">
+            <p>
+              La app puede asignar el lavado por turnos entre los que jugaron la fecha y
+              permitir override manual si justo el encargado no va el martes siguiente.
+            </p>
+            <p>
+              Mas adelante se puede agregar modo aleatorio, pero para el grupo real la
+              rotacion ordenada probablemente sea mas justa y mas simple de auditar.
+            </p>
           </div>
         </SectionCard>
       </section>

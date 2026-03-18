@@ -5,6 +5,7 @@ import type {
   ClusterPlayer,
   HistoryMatch,
   LeaderboardEntry,
+  LaundryDuty,
   NavItem,
   NextMatch,
   Scorer,
@@ -32,6 +33,14 @@ export const attendanceBoardSeed: AttendanceEntry[] = [
   { name: "Pacho", status: "Suplente", detail: "Primero en espera" },
   { name: "Nico Arquero", status: "No va", detail: "Baja avisada 16:40" },
 ];
+
+export const laundryDutySeed: LaundryDuty = {
+  assigneeName: "Fidel",
+  assignmentMode: "rotation",
+  dueLabel: "Entregar el proximo martes",
+  notes: "Se lleva las camisetas crema y negras con naranja despues del partido.",
+  status: "Asignado",
+};
 
 export const availabilityOptionsSeed: AvailabilityOption[] = [
   {

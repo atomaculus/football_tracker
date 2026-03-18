@@ -5,6 +5,7 @@ import {
   clusterPlayersSeed,
   historyMatchesSeed,
   leaderboardSeed,
+  laundryDutySeed,
   navItemsSeed,
   nextMatchSeed,
   scorersSeed,
@@ -256,6 +257,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         ? attendanceData.attendanceBoard
         : attendanceBoardSeed,
     leaderboard: leaderboardSeed,
+    laundryDuty: laundryDutySeed,
     navItems: navItemsSeed,
     nextMatch: buildNextMatch(upcomingMatch, attendanceData?.counts),
   };
@@ -300,10 +302,11 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
 }
 
 export async function getAdminPageData(): Promise<AdminPageData> {
-  const { attendanceBoard } = await getDashboardData();
+  const { attendanceBoard, laundryDuty } = await getDashboardData();
 
   return {
     adminActions: adminActionsSeed,
     attendanceBoard,
+    laundryDuty,
   };
 }

@@ -99,7 +99,13 @@ Cada martes hay que resolver rapido:
    - diferencia de goles del equipo cuando jugo
    - porcentaje simple de victorias/empates/derrotas
 
-7. `Reglamento digital`
+7. `Logistica de camisetas`
+   - asignar quien se lleva las camisetas a lavar
+   - preferencia por turnos entre quienes jugaron
+   - posibilidad de override admin si el asignado no puede
+   - recordar que hay dos juegos: crema y negras con naranja
+
+8. `Reglamento digital`
    - reglas visibles dentro de la app
    - algunas reglas automatizadas
    - otras reglas quedan manuales en esta primera version
@@ -134,6 +140,7 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
 5. Se cargan equipos.
 6. Despues del partido se registra resultado y goles.
 7. La app actualiza historial y estadisticas.
+8. La app deja asignado quien se lleva las camisetas para devolverlas el martes siguiente.
 
 ## Pantallas MVP
 
@@ -185,6 +192,7 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
    - mover jugadores
    - cargar resultado
    - suspender fecha por clima o por no llegar al minimo
+   - asignar o reasignar encargado de camisetas
 
 ## Features adicionales recomendadas para MVP+
 

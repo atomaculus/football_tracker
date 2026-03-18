@@ -131,6 +131,21 @@ Si mas adelante quieren escalar, esta base sigue siendo razonable.
 - `minute`
 - `is_own_goal`
 
+### `laundry_assignments`
+
+- `id`
+- `match_id`
+- `player_id`
+- `assignment_mode`
+  - `rotation`
+  - `random`
+- `status`
+  - `assigned`
+  - `returned`
+  - `reassigned`
+- `kit_notes`
+- `created_at`
+
 ### `rules`
 
 - `id`
@@ -165,6 +180,7 @@ La recomendacion practica es que el MVP empiece a operar con datos nuevos desde 
 - no permitir goles para jugadores fuera de ese partido
 - no permitir cerrar partido sin equipos definidos
 - validar formatos reales: `14 => 7v7`, `12 => 6v6`, `<12 => suspended` salvo override admin
+- asignar camisetas solo a jugadores que efectivamente jugaron esa fecha
 
 ### Manuales al inicio
 

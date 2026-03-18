@@ -84,6 +84,19 @@ create table if not exists public.goals (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.laundry_assignments (
+  id uuid primary key default gen_random_uuid(),
+  match_id uuid not null references public.matches(id) on delete cascade,
+  player_id uuid not null references public.players(id) on delete cascade,
+  assignment_mode text not null default 'rotation'
+    check (assignment_mode in ('rotation', 'random')),
+  status text not null default 'assigned'
+    check (status in ('assigned', 'returned', 'reassigned')),
+  kit_notes text,
+  created_at timestamptz not null default now(),
+  unique (match_id)
+);
+
 create table if not exists public.rules (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
@@ -97,3 +110,4 @@ create index if not exists idx_availability_match_id on public.availability_resp
 create index if not exists idx_availability_player_id on public.availability_responses(player_id);
 create index if not exists idx_participants_match_id on public.match_participants(match_id);
 create index if not exists idx_goals_match_id on public.goals(match_id);
+create index if not exists idx_laundry_assignments_player_id on public.laundry_assignments(player_id);

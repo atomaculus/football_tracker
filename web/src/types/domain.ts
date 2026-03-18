@@ -22,6 +22,14 @@ export type AttendanceEntry = {
   detail: string;
 };
 
+export type LaundryDuty = {
+  assigneeName: string;
+  assignmentMode: "rotation" | "random";
+  dueLabel: string;
+  notes: string;
+  status: string;
+};
+
 export type AvailabilityOption = {
   label: string;
   value: "going" | "backup" | "not_going";
@@ -75,6 +83,7 @@ export type AvailabilityPageData = {
 
 export type DashboardData = {
   nextMatch: NextMatch;
+  laundryDuty: LaundryDuty;
   attendanceBoard: AttendanceEntry[];
   leaderboard: LeaderboardEntry[];
   navItems: NavItem[];
@@ -97,4 +106,5 @@ export type PlayersPageData = {
 export type AdminPageData = {
   adminActions: AdminAction[];
   attendanceBoard: AttendanceEntry[];
+  laundryDuty: LaundryDuty;
 };
