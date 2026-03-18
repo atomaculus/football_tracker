@@ -30,6 +30,8 @@ Hoy el proyecto tiene:
 - capa de datos preparada para Supabase
 - lectura de jugadores y proximo partido desde Supabase cuando hay credenciales
 - formulario de confirmacion listo para persistir asistencia en Supabase
+- proyecto real de Supabase ya conectado localmente
+- jugadores iniciales y primer partido real ya cargados en Supabase
 - fallback local con seed data
 - schema SQL inicial para Supabase
 - seed/template de jugadores
@@ -96,10 +98,12 @@ Mientras no se configuren, la app usa seed local.
 
 ## Siguiente paso recomendado
 
-Conectar Supabase real y reemplazar los seeds en estas dos vistas primero:
+Validar el flujo real de asistencia y avanzar con admin real:
 
-1. `Jugadores`
-2. `Confirmar asistencia`
+1. probar `Jugadores`
+2. probar `Confirmar asistencia`
+3. refrescar `Inicio` y `Admin`
+4. construir apertura / cierre / suspension real del partido
 
 ## Historial de avances
 
@@ -110,4 +114,8 @@ Commits principales hasta ahora:
 - `d8b75a1` Refine MVP UX and add players view
 - `a391b3b` Add schema and player seed template
 - `312d880` Prepare web app for Supabase data layer
-- siguiente commit: confirmacion preparada para persistencia y dashboard listo para leer Supabase
+- `6519107` Wire availability flow and Supabase-ready dashboard
+- `b7b6802` Fix confirm action export for Next server actions
+- `1d286cf` Align MVP rules with real match formats
+- `7c43870` Add jersey laundry duty MVP flow
+- `1ba4e13` Add project continuity status file

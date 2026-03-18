@@ -60,6 +60,7 @@ Capacidades actuales:
 - panel admin mock
 - feature de encargado de camisetas
 - capa de datos preparada para Supabase
+- conexion real a Supabase ya configurada en esta maquina
 - fallback local con seed data si no hay credenciales
 
 ## Decisiones de producto ya definidas
@@ -111,6 +112,11 @@ Datos y backend:
 - se dejo lista la pantalla de confirmacion para persistir en `availability_responses`
 - se dejo lista la lectura de `players` y `matches` desde Supabase si existen credenciales
 - se agrego al schema la tabla `laundry_assignments`
+- se creo proyecto real de Supabase
+- se corrio `supabase/schema.sql`
+- se cargaron 12 jugadores iniciales en `players`
+- se creo la temporada `2026`
+- se creo un partido real `open` para el martes `2026-03-24` en `Open Gallo` a las `21:00`
 
 Git / repo:
 
@@ -189,14 +195,18 @@ Sin esas variables:
 - usa seed local
 - no persiste confirmaciones reales
 
+En esta maquina ya existe ademas:
+
+- `web/.env.local`
+
+Ese archivo no se sube a git.
+
 ## Estado tecnico exacto hoy
 
 Lo que ya funciona con datos mock:
 
 - navegacion
-- visualizacion de jugadores
 - historial demo
-- panel admin demo
 - encargado de camisetas demo
 
 Lo que ya esta preparado para datos reales:
@@ -206,12 +216,20 @@ Lo que ya esta preparado para datos reales:
 - lectura de respuestas de asistencia
 - submit de confirmacion de asistencia
 
+Lo que ya quedo conectado de verdad en Supabase:
+
+- `players`
+- `seasons`
+- `matches`
+
+Estado real actual de la base:
+
+- temporada `2026` creada
+- 12 jugadores cargados
+- partido abierto para `2026-03-24`
+
 Lo que todavia no esta conectado end to end:
 
-- proyecto real de Supabase
-- tablas creadas en una instancia real
-- jugadores reales cargados
-- un partido real creado
 - login por telefono / OTP
 - admin real para abrir, cerrar o suspender partido
 - asignacion real por turnos del encargado de camisetas
@@ -222,14 +240,11 @@ Lo que todavia no esta conectado end to end:
 
 Orden recomendado para seguir sin perder foco:
 
-1. crear proyecto real en Supabase
-2. correr `supabase/schema.sql`
-3. cargar jugadores reales desde `supabase/players_template.csv` o insert manual
-4. configurar `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-5. crear un primer `match` real con estado `open`
-6. probar `/jugadores`
-7. probar `/confirmar`
-8. probar refresh de `Inicio` y `Admin`
+1. probar `/jugadores` con datos reales
+2. probar `/confirmar` guardando respuestas reales
+3. probar refresh de `/` y `/admin`
+4. reemplazar el `attendanceBoard` seed por respuestas reales completas
+5. construir panel admin real para abrir / cerrar / suspender fecha
 
 ## Bloque siguiente despues de Supabase
 
@@ -259,3 +274,17 @@ Una vez conectado Supabase:
 Ultimo commit funcional relevante al crear este archivo:
 
 - `7c43870` `Add jersey laundry duty MVP flow`
+
+## Update 2026-03-18
+
+Supabase quedo conectado con exito y el backend minimo ya no esta vacio.
+
+Datos cargados manualmente:
+
+- `season`: `2026`
+- `match`: martes `2026-03-24`, `21:00`, `Open Gallo`, estado `open`
+- `players`: 12 registros iniciales
+
+Proximo objetivo inmediato:
+
+- validar el flujo real de confirmacion desde la UI
