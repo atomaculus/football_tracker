@@ -116,7 +116,7 @@ Datos y backend:
 - se corrio `supabase/schema.sql`
 - se cargaron 12 jugadores iniciales en `players`
 - se creo la temporada `2026`
-- se creo un partido real `open` para el martes `2026-03-24` en `Open Gallo` a las `21:00`
+- se creo un partido real `open` para el martes `2026-03-24` en `Backyard` a las `21:00`
 
 Git / repo:
 
@@ -282,7 +282,7 @@ Supabase quedo conectado con exito y el backend minimo ya no esta vacio.
 Datos cargados manualmente:
 
 - `season`: `2026`
-- `match`: martes `2026-03-24`, `21:00`, `Open Gallo`, estado `open`
+- `match`: martes `2026-03-24`, `21:00`, `Backyard`, estado `open`
 - `players`: 12 registros iniciales
 
 Proximo objetivo inmediato:

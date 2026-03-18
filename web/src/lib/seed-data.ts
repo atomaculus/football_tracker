@@ -15,7 +15,7 @@ import type {
 export const nextMatchSeed: NextMatch = {
   dateLabel: "Martes 25 de marzo",
   timeLabel: "21:00",
-  venue: "Open Gallo",
+  venue: "Backyard",
   format: "7v7",
   targetPlayers: 14,
   fallbackPlayers: 12,
