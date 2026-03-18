@@ -128,6 +128,8 @@ function buildNextMatch(
     dateLabel: formatMatchDate(match.match_date),
     fallbackPlayers: match.fallback_players,
     format: match.format_label,
+    isoDate: match.match_date,
+    isoTime: match.start_time ?? undefined,
     missing: remaining,
     notes: match.notes ?? undefined,
     rawStatus: match.status as NextMatch["rawStatus"],

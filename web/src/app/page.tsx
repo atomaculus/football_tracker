@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
+import { MatchCountdown } from "@/components/match-countdown";
 import { Pill, SectionCard } from "@/components/ui";
 import { getDashboardData } from "@/lib/data";
 
@@ -61,6 +62,8 @@ export default async function Home() {
                 <p className="mt-2 text-3xl font-black">{nextMatch.fallbackPlayers}</p>
               </div>
             </div>
+
+            <MatchCountdown isoDate={nextMatch.isoDate} isoTime={nextMatch.isoTime} />
           </div>
         </SectionCard>
 

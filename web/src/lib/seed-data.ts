@@ -13,8 +13,10 @@ import type {
 } from "@/types/domain";
 
 export const nextMatchSeed: NextMatch = {
-  dateLabel: "Martes 25 de marzo",
-  timeLabel: "21:00",
+  dateLabel: "Martes 24 de marzo",
+  isoDate: "2026-03-24",
+  isoTime: "19:00:00",
+  timeLabel: "19:00",
   venue: "Backyard",
   format: "7v7",
   targetPlayers: 14,

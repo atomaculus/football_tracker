@@ -6,6 +6,8 @@ export type NavItem = {
 export type NextMatch = {
   id?: string;
   dateLabel: string;
+  isoDate?: string;
+  isoTime?: string;
   timeLabel: string;
   venue: string;
   format: string;
