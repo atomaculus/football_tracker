@@ -30,6 +30,7 @@ type MatchRow = {
   id: string;
   location: string | null;
   match_date: string;
+  notes: string | null;
   start_time: string | null;
   status: string;
   target_players: number;
@@ -123,10 +124,13 @@ function buildNextMatch(
 
   return {
     confirmed,
+    id: match.id,
     dateLabel: formatMatchDate(match.match_date),
     fallbackPlayers: match.fallback_players,
     format: match.format_label,
     missing: remaining,
+    notes: match.notes ?? undefined,
+    rawStatus: match.status as NextMatch["rawStatus"],
     status: mapMatchStatus(match.status),
     substitutes,
     targetPlayers: match.target_players,
@@ -177,7 +181,7 @@ async function getUpcomingMatchFromSupabase() {
   const { data, error } = await supabase
     .from("matches")
     .select(
-      "id, match_date, location, start_time, target_players, fallback_players, format_label, status",
+      "id, match_date, location, start_time, target_players, fallback_players, format_label, status, notes",
     )
     .in("status", ["scheduled", "open", "closed", "suspended"])
     .order("match_date", { ascending: true })
@@ -275,7 +279,10 @@ export async function getAvailabilityPageData(): Promise<AvailabilityPageData> {
     availabilityOptions: availabilityOptionsSeed,
     currentMode: hasSupabaseEnv() && upcomingMatch ? "supabase" : "demo",
     matchId: upcomingMatch?.id ?? "seed-next-match",
+    matchNotes: dashboardData.nextMatch.notes,
+    matchStatus: dashboardData.nextMatch.status,
     players: players ?? clusterPlayersSeed.filter((player) => player.status !== "Inactivo"),
+    submissionsOpen: dashboardData.nextMatch.rawStatus === "open" || !upcomingMatch,
   };
 }
 
@@ -302,11 +309,12 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
 }
 
 export async function getAdminPageData(): Promise<AdminPageData> {
-  const { attendanceBoard, laundryDuty } = await getDashboardData();
+  const { attendanceBoard, laundryDuty, nextMatch } = await getDashboardData();
 
   return {
     adminActions: adminActionsSeed,
     attendanceBoard,
+    currentMatch: nextMatch,
     laundryDuty,
   };
 }

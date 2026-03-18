@@ -19,8 +19,11 @@ export default async function ConfirmPage() {
         attendanceBoard={availabilityData.attendanceBoard}
         availabilityOptions={availabilityData.availabilityOptions}
         matchId={availabilityData.matchId}
+        matchNotes={availabilityData.matchNotes}
+        matchStatus={availabilityData.matchStatus}
         mode={availabilityData.currentMode}
         players={availabilityData.players}
+        submissionsOpen={availabilityData.submissionsOpen}
       />
     </AppShell>
   );

@@ -40,6 +40,29 @@ export async function submitAvailabilityResponse(
     };
   }
 
+  const { data: match, error: matchError } = await supabase
+    .from("matches")
+    .select("status")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (matchError || !match) {
+    return {
+      message: "No se encontro el partido para registrar la respuesta.",
+      status: "error",
+    };
+  }
+
+  if (match.status !== "open") {
+    return {
+      message:
+        match.status === "suspended"
+          ? "La fecha esta suspendida. No se pueden cargar respuestas."
+          : "La convocatoria esta cerrada. No se pueden cambiar respuestas ahora.",
+      status: "error",
+    };
+  }
+
   const { error } = await supabase.from("availability_responses").upsert(
     {
       match_id: matchId,

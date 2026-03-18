@@ -4,6 +4,7 @@ export type NavItem = {
 };
 
 export type NextMatch = {
+  id?: string;
   dateLabel: string;
   timeLabel: string;
   venue: string;
@@ -11,6 +12,8 @@ export type NextMatch = {
   targetPlayers: number;
   fallbackPlayers: number;
   status: string;
+  rawStatus?: "scheduled" | "open" | "closed" | "played" | "cancelled" | "suspended";
+  notes?: string;
   confirmed: number;
   substitutes: number;
   missing: number;
@@ -79,6 +82,9 @@ export type AvailabilityPageData = {
   currentMode: "demo" | "supabase";
   matchId: string;
   players: ClusterPlayer[];
+  matchStatus: string;
+  matchNotes?: string;
+  submissionsOpen: boolean;
 };
 
 export type DashboardData = {
@@ -106,5 +112,6 @@ export type PlayersPageData = {
 export type AdminPageData = {
   adminActions: AdminAction[];
   attendanceBoard: AttendanceEntry[];
+  currentMatch: NextMatch;
   laundryDuty: LaundryDuty;
 };

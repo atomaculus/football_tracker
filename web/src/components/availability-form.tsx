@@ -12,14 +12,20 @@ const initialAvailabilityActionState = {
   status: "idle",
 } as const;
 
-function SubmitButton({ mode }: { mode: "demo" | "supabase" }) {
+function SubmitButton({
+  disabled,
+  mode,
+}: {
+  disabled: boolean;
+  mode: "demo" | "supabase";
+}) {
   const { pending } = useFormStatus();
 
   return (
     <button
       type="submit"
-      disabled={pending}
-      className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-70"
+      disabled={pending || disabled}
+      className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending
         ? "Guardando..."
@@ -34,14 +40,20 @@ export function AvailabilityForm({
   attendanceBoard,
   availabilityOptions,
   matchId,
+  matchNotes,
+  matchStatus,
   mode,
   players,
+  submissionsOpen,
 }: {
   attendanceBoard: AttendanceEntry[];
   availabilityOptions: AvailabilityOption[];
   matchId: string;
+  matchNotes?: string;
+  matchStatus: string;
   mode: "demo" | "supabase";
   players: ClusterPlayer[];
+  submissionsOpen: boolean;
 }) {
   const [selectedResponse, setSelectedResponse] = useState(
     availabilityOptions[0]?.value ?? "going",
@@ -71,7 +83,8 @@ export function AvailabilityForm({
               name="playerId"
               value={selectedPlayerId}
               onChange={(event) => setSelectedPlayerId(event.target.value)}
-              className="rounded-[1.2rem] border border-line bg-surface-strong px-4 py-4 text-base font-semibold outline-none transition focus:border-foreground"
+              disabled={!submissionsOpen}
+              className="rounded-[1.2rem] border border-line bg-surface-strong px-4 py-4 text-base font-semibold outline-none transition focus:border-foreground disabled:cursor-not-allowed disabled:opacity-70"
             >
               {players.map((player) => (
                 <option key={player.id} value={player.id}>
@@ -95,8 +108,9 @@ export function AvailabilityForm({
                 <button
                   key={option.value}
                   type="button"
+                  disabled={!submissionsOpen}
                   onClick={() => setSelectedResponse(option.value)}
-                  className={`rounded-[1.5rem] border p-5 text-left transition ${
+                  className={`rounded-[1.5rem] border p-5 text-left transition disabled:cursor-not-allowed disabled:opacity-70 ${
                     isSelected
                       ? selectedStyle
                       : "border-line bg-surface-strong hover:border-foreground"
@@ -135,8 +149,16 @@ export function AvailabilityForm({
               </p>
               <p className="mt-2 text-lg font-extrabold">{selectedOption?.label}</p>
             </div>
-            <SubmitButton mode={mode} />
+            <SubmitButton disabled={!submissionsOpen} mode={mode} />
           </div>
+
+          {!submissionsOpen ? (
+            <div className="rounded-[1.2rem] border border-accent/40 bg-[#f7ddc9] px-4 py-3 text-sm leading-6 text-foreground">
+              {matchStatus === "Partido suspendido"
+                ? "La fecha esta suspendida. No se aceptan respuestas nuevas."
+                : "La convocatoria esta cerrada. El admin puede volver a abrirla desde el panel."}
+            </div>
+          ) : null}
 
           {actionState.status !== "idle" ? (
             <div
@@ -165,6 +187,14 @@ export function AvailabilityForm({
               ? "Esta instancia ya esta lista para guardar respuestas en la base y refrescar el tablero."
               : "Ahora mismo sigue en modo demo. La persistencia queda activada apenas carguemos las variables publicas de Supabase."}
           </p>
+          {matchNotes ? (
+            <div className="rounded-[1.2rem] border border-white/10 bg-white/6 px-4 py-3">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
+                Nota del admin
+              </p>
+              <p className="mt-2 text-white/80">{matchNotes}</p>
+            </div>
+          ) : null}
           <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
               Respuestas recientes

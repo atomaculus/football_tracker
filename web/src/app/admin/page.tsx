@@ -1,10 +1,12 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminMatchControls } from "@/components/admin-match-controls";
 import { Pill, SectionCard } from "@/components/ui";
 import { getAdminPageData, getDashboardData } from "@/lib/data";
 
 export default async function AdminPage() {
   const { navItems, nextMatch } = await getDashboardData();
-  const { adminActions, attendanceBoard, laundryDuty } = await getAdminPageData();
+  const { adminActions, attendanceBoard, currentMatch, laundryDuty } =
+    await getAdminPageData();
 
   return (
     <AppShell
@@ -14,7 +16,9 @@ export default async function AdminPage() {
       nextMatch={nextMatch}
     >
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <SectionCard eyebrow="Acciones" title="Control semanal">
+        <AdminMatchControls currentMatch={currentMatch} />
+
+        <SectionCard eyebrow="Acciones" title="Backlog admin">
           <div className="grid gap-3 sm:grid-cols-2">
             {adminActions.map((action) => (
               <div
