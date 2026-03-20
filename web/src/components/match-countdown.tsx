@@ -81,17 +81,24 @@ export function MatchCountdown({
   compact?: boolean;
 }) {
   const targetDate = getTargetDate(isoDate, isoTime);
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    const initialTimeoutId = window.setTimeout(() => {
+      setNow(Date.now());
+    }, 0);
+
     const intervalId = window.setInterval(() => {
       setNow(Date.now());
     }, 1000);
 
-    return () => window.clearInterval(intervalId);
+    return () => {
+      window.clearTimeout(initialTimeoutId);
+      window.clearInterval(intervalId);
+    };
   }, []);
 
-  const countdown = formatCountdown(targetDate, now);
+  const countdown = formatCountdown(targetDate, now ?? 0);
 
   if (compact) {
     return (
