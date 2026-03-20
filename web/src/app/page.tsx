@@ -31,6 +31,11 @@ export default async function Home() {
                         {nextMatch.dateLabel} {" · "} {nextMatch.timeLabel}
                       </p>
                       <p className="mt-1 text-sm text-muted">{nextMatch.venue}</p>
+                      {nextMatch.signupClosesLabel ? (
+                        <p className="mt-2 text-sm text-muted">
+                          La convocatoria cierra automaticamente {nextMatch.signupClosesLabel}.
+                        </p>
+                      ) : null}
                     </div>
                     <Pill tone="accent">{nextMatch.status}</Pill>
                   </div>

@@ -69,6 +69,41 @@ function formatMatchTime(time: string | null) {
   return time.slice(0, 5);
 }
 
+function getMatchStartDate(isoDate?: string, isoTime?: string | null) {
+  if (!isoDate) {
+    return null;
+  }
+
+  const safeTime = isoTime && /^\d{2}:\d{2}(:\d{2})?$/.test(isoTime) ? isoTime : "21:00:00";
+  const normalizedTime = safeTime.length === 5 ? `${safeTime}:00` : safeTime;
+  const parsedDate = new Date(`${isoDate}T${normalizedTime}-03:00`);
+
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function getSignupCutoffDate(isoDate?: string, isoTime?: string | null) {
+  const matchStartDate = getMatchStartDate(isoDate, isoTime);
+
+  if (!matchStartDate) {
+    return null;
+  }
+
+  return new Date(matchStartDate.getTime() - 90 * 60 * 1000);
+}
+
+function formatCutoffLabel(cutoffDate: Date | null) {
+  if (!cutoffDate) {
+    return undefined;
+  }
+
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "2-digit",
+  }).format(cutoffDate);
+}
+
 function mapMatchStatus(status: string) {
   switch (status) {
     case "open":
@@ -180,13 +215,22 @@ function getAdminInsights(nextMatch: NextMatch, attendanceSummary: AttendanceSum
           };
 
   const adminActionInsight =
-    nextMatch.rawStatus === "open" && confirmed >= nextMatch.targetPlayers
+    nextMatch.rawStatus === "open" &&
+    nextMatch.submissionsOpen &&
+    confirmed >= nextMatch.targetPlayers
       ? {
-          detail: "La convocatoria ya tiene cupo ideal. El siguiente paso logico es cerrar la lista o pasar suplentes a espera.",
+          detail: "La convocatoria ya tiene cupo ideal, pero puede seguir entrando gente como suplente hasta el cierre por horario.",
           label: "Siguiente accion",
-          tone: "lime" as const,
-          value: "Cerrar lista",
+          tone: "default" as const,
+          value: "Seguir sumando suplentes",
         }
+      : nextMatch.rawStatus === "open" && !nextMatch.submissionsOpen
+        ? {
+            detail: "La ventana de anotacion ya cerro por horario. La lista queda congelada hasta el partido.",
+            label: "Siguiente accion",
+            tone: "default" as const,
+            value: "Lista congelada",
+          }
       : nextMatch.rawStatus === "open" && confirmed < nextMatch.fallbackPlayers
         ? {
             detail: "La fecha sigue abierta, pero conviene monitorear bajas y definir si se sostiene con suplentes o se suspende.",
@@ -222,6 +266,10 @@ function buildNextMatch(
   const confirmed = counts?.going ?? 0;
   const substitutes = counts?.backup ?? 0;
   const remaining = Math.max(match.target_players - confirmed, 0);
+  const signupCutoffDate = getSignupCutoffDate(match.match_date, match.start_time);
+  const submissionsOpen =
+    match.status === "open" &&
+    (signupCutoffDate ? Date.now() < signupCutoffDate.getTime() : true);
 
   return {
     confirmed,
@@ -234,8 +282,10 @@ function buildNextMatch(
     missing: remaining,
     notes: match.notes ?? undefined,
     rawStatus: match.status as NextMatch["rawStatus"],
+    signupClosesLabel: formatCutoffLabel(signupCutoffDate),
     status: mapMatchStatus(match.status),
     substitutes,
+    submissionsOpen,
     targetPlayers: match.target_players,
     timeLabel: formatMatchTime(match.start_time),
     venue: match.location ?? "Cancha a definir",
@@ -443,7 +493,7 @@ export async function getAvailabilityPageData(): Promise<AvailabilityPageData> {
     matchNotes: dashboardData.nextMatch.notes,
     matchStatus: dashboardData.nextMatch.status,
     players: players ?? clusterPlayersSeed.filter((player) => player.status !== "Inactivo"),
-    submissionsOpen: dashboardData.nextMatch.rawStatus === "open" || !upcomingMatch,
+    submissionsOpen: dashboardData.nextMatch.submissionsOpen ?? !upcomingMatch,
   };
 }
 

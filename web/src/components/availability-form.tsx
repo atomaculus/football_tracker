@@ -84,10 +84,12 @@ export function AvailabilityForm({
         ? "accent"
         : "default";
   const statusMessage = submissionsOpen
-    ? "La convocatoria esta abierta y cualquier cambio impacta en la lista del martes."
+    ? currentMatch.signupClosesLabel
+      ? `La convocatoria esta abierta. Se cierra automaticamente ${currentMatch.signupClosesLabel}, una hora y media antes del partido.`
+      : "La convocatoria esta abierta y cualquier cambio impacta en la lista del martes."
     : currentMatch.rawStatus === "suspended"
       ? "La fecha esta suspendida. El admin puede dejar una nota, pero no se aceptan nuevas respuestas."
-      : "La lista esta cerrada por ahora. Solo el admin puede reabrir la convocatoria.";
+      : "La lista esta cerrada por horario o por decision del admin. Ya no se aceptan respuestas nuevas.";
 
   return (
     <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
@@ -177,7 +179,7 @@ export function AvailabilityForm({
             <div className="rounded-[1.2rem] border border-accent/40 bg-[#f7ddc9] px-4 py-3 text-sm leading-6 text-foreground">
               {matchStatus === "Partido suspendido"
                 ? "La fecha esta suspendida. No se aceptan respuestas nuevas."
-                : "La convocatoria esta cerrada. El admin puede volver a abrirla desde el panel."}
+                : "La convocatoria ya esta cerrada. El admin puede reabrirla manualmente si hace falta."}
             </div>
           ) : null}
 

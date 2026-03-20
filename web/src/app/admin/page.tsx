@@ -82,7 +82,7 @@ export default async function AdminPage() {
           attendanceBoard={attendanceBoard}
           attendanceSummary={attendanceSummary}
           currentMatchId={currentMatch.id}
-          editable={currentMatch.rawStatus === "open"}
+          editable={Boolean(currentMatch.submissionsOpen)}
           projectedStarters={projectedStarters}
           projectedSubstitutes={projectedSubstitutes}
         />

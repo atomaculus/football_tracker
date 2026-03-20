@@ -22,6 +22,23 @@ type AttendanceQueryRow = {
   response: "going" | "backup" | "not_going" | "dropped";
 };
 
+function getSignupCutoffDate(matchDate?: string, startTime?: string | null) {
+  if (!matchDate) {
+    return null;
+  }
+
+  const safeTime =
+    startTime && /^\d{2}:\d{2}(:\d{2})?$/.test(startTime) ? startTime : "21:00:00";
+  const normalizedTime = safeTime.length === 5 ? `${safeTime}:00` : safeTime;
+  const matchStart = new Date(`${matchDate}T${normalizedTime}-03:00`);
+
+  if (Number.isNaN(matchStart.getTime())) {
+    return null;
+  }
+
+  return new Date(matchStart.getTime() - 90 * 60 * 1000);
+}
+
 async function getLatestPlayedRoster(
   matchId: string,
 ): Promise<PreviousPlayerInput[] | null> {
@@ -66,7 +83,7 @@ async function syncMatchParticipants(matchId: string) {
     await Promise.all([
       supabase
         .from("matches")
-        .select("target_players")
+        .select("match_date, start_time, target_players")
         .eq("id", matchId)
         .maybeSingle(),
       supabase
@@ -257,7 +274,7 @@ export async function updateAttendanceResponseByAdmin(
 
   const { data: match, error: matchError } = await supabase
     .from("matches")
-    .select("status")
+    .select("match_date, start_time, status")
     .eq("id", matchId)
     .maybeSingle();
 
@@ -271,6 +288,15 @@ export async function updateAttendanceResponseByAdmin(
   if (match.status !== "open") {
     return {
       message: "Solo se puede editar la lista cuando la convocatoria esta abierta.",
+      status: "error",
+    };
+  }
+
+  const signupCutoffDate = getSignupCutoffDate(match.match_date, match.start_time);
+
+  if (signupCutoffDate && Date.now() >= signupCutoffDate.getTime()) {
+    return {
+      message: "La convocatoria ya cerro por horario. La lista quedo congelada.",
       status: "error",
     };
   }

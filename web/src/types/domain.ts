@@ -8,6 +8,8 @@ export type NextMatch = {
   dateLabel: string;
   isoDate?: string;
   isoTime?: string;
+  signupClosesLabel?: string;
+  submissionsOpen?: boolean;
   timeLabel: string;
   venue: string;
   format: string;
