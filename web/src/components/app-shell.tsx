@@ -40,7 +40,7 @@ export function AppShell({
             </div>
 
             <div className="grid gap-4">
-              <div className="rounded-[1.6rem] border border-line bg-surface-strong p-5">
+              <div className="rounded-[1.6rem] border border-[#2d6a3d]/14 bg-[linear-gradient(180deg,rgba(249,252,244,0.98),rgba(235,242,229,0.96))] p-5">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
@@ -55,19 +55,19 @@ export function AppShell({
                   </span>
                 </div>
                 <div className="mt-5 grid grid-cols-3 gap-3">
-                  <div className="rounded-2xl bg-[#f1ead8] p-3">
+                  <div className="rounded-2xl border border-[#2d6a3d]/10 bg-[#edf3e4] p-3">
                     <p className="text-xs uppercase tracking-[0.18em] text-muted">
                       Confirmados
                     </p>
                     <p className="mt-1 text-3xl font-black">{nextMatch.confirmed}</p>
                   </div>
-                  <div className="rounded-2xl bg-[#f7ddc9] p-3">
+                  <div className="rounded-2xl border border-[#d96d2d]/12 bg-[#f4ddcf] p-3">
                     <p className="text-xs uppercase tracking-[0.18em] text-muted">
                       Suplentes
                     </p>
                     <p className="mt-1 text-3xl font-black">{nextMatch.substitutes}</p>
                   </div>
-                  <div className="rounded-2xl bg-[#dae8db] p-3">
+                  <div className="rounded-2xl border border-[#2d6a3d]/12 bg-[#dbe8d8] p-3">
                     <p className="text-xs uppercase tracking-[0.18em] text-muted">
                       Faltan
                     </p>

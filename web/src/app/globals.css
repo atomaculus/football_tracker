@@ -1,17 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4efe4;
-  --foreground: #13261c;
-  --surface: rgba(255, 252, 245, 0.74);
-  --surface-strong: #fffaf0;
-  --surface-dark: #173426;
-  --line: rgba(19, 38, 28, 0.12);
-  --muted: #5f675d;
-  --accent: #ef7f31;
-  --accent-strong: #cb5e18;
-  --lime: #d8ef5c;
-  --sand: #e7cf9c;
+  --background: #eef3e6;
+  --foreground: #102616;
+  --surface: rgba(248, 251, 243, 0.82);
+  --surface-strong: #f9fcf4;
+  --surface-dark: #163823;
+  --line: rgba(16, 38, 22, 0.12);
+  --muted: #526353;
+  --accent: #d96d2d;
+  --accent-strong: #aa4e1b;
+  --lime: #b9da55;
+  --sand: #d7c49b;
+  --pitch: #2d6a3d;
+  --pitch-strong: #1f4c2c;
+  --chalk: #f3f5eb;
 }
 
 @theme inline {
@@ -42,9 +45,10 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(216, 239, 92, 0.54), transparent 22%),
-    radial-gradient(circle at 85% 15%, rgba(239, 127, 49, 0.28), transparent 18%),
-    linear-gradient(180deg, #efe6d4 0%, #f4efe4 40%, #efe9db 100%);
+    radial-gradient(circle at top left, rgba(185, 218, 85, 0.36), transparent 24%),
+    radial-gradient(circle at 88% 14%, rgba(217, 109, 45, 0.2), transparent 18%),
+    linear-gradient(135deg, rgba(45, 106, 61, 0.08), transparent 24%),
+    linear-gradient(180deg, #eff5e8 0%, #eef3e6 42%, #e4ecdb 100%);
   min-height: 100vh;
 }
 
@@ -53,7 +57,7 @@ a {
 }
 
 ::selection {
-  background: rgba(216, 239, 92, 0.72);
+  background: rgba(185, 218, 85, 0.72);
   color: #112117;
 }
 
@@ -68,15 +72,15 @@ a {
   pointer-events: none;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(19, 38, 28, 0.035) 1px, transparent 1px);
+    linear-gradient(90deg, rgba(16, 38, 22, 0.03) 1px, transparent 1px);
   background-size: 20px 20px;
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 92%);
 }
 
 .card-shadow {
   box-shadow:
-    0 20px 40px rgba(17, 33, 23, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    0 18px 38px rgba(20, 44, 28, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.68);
 }
 
 .display {
