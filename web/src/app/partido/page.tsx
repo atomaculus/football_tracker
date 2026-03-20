@@ -1,8 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { SectionCard } from "@/components/ui";
+import { getViewerSession } from "@/lib/auth";
 import { getDashboardData, getMatchPageData } from "@/lib/data";
 
 export default async function MatchPage() {
+  const viewer = await getViewerSession();
   const { navItems, nextMatch } = await getDashboardData();
   const { scorers, teams } = await getMatchPageData();
 
@@ -12,6 +14,7 @@ export default async function MatchPage() {
       subtitle="Vista para revisar formacion, resultado y goleadores de una fecha puntual."
       navItems={navItems}
       nextMatch={nextMatch}
+      viewer={viewer}
     >
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <SectionCard eyebrow="Equipos" title="Formacion del martes">

@@ -4,9 +4,11 @@ import { AdminFinalRosterManager } from "@/components/admin-final-roster-manager
 import { AdminMatchControls } from "@/components/admin-match-controls";
 import { AdminMatchResultManager } from "@/components/admin-match-result-manager";
 import { Pill, SectionCard } from "@/components/ui";
+import { requireAdminSession } from "@/lib/auth";
 import { getAdminPageData, getDashboardData } from "@/lib/data";
 
 export default async function AdminPage() {
+  const viewer = await requireAdminSession("/admin");
   const { navItems, nextMatch } = await getDashboardData();
   const {
     adminInsights,
@@ -28,6 +30,7 @@ export default async function AdminPage() {
       subtitle="Vista operativa para abrir convocatoria, mover jugadores entre lista y cerrar el partido del martes."
       navItems={navItems}
       nextMatch={nextMatch}
+      viewer={viewer}
     >
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <AdminMatchControls currentMatch={currentMatch} />

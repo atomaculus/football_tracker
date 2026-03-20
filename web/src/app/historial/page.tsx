@@ -1,8 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { SectionCard } from "@/components/ui";
+import { getViewerSession } from "@/lib/auth";
 import { getDashboardData, getHistoryPageData } from "@/lib/data";
 
 export default async function HistoryPage() {
+  const viewer = await getViewerSession();
   const { navItems, nextMatch } = await getDashboardData();
   const { historyMatches, leaderboard } = await getHistoryPageData();
 
@@ -12,6 +14,7 @@ export default async function HistoryPage() {
       subtitle="Resumen de partidos anteriores, resultados y rendimiento acumulado del grupo."
       navItems={navItems}
       nextMatch={nextMatch}
+      viewer={viewer}
     >
       <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <SectionCard eyebrow="Ultimos partidos" title="Fechas recientes">

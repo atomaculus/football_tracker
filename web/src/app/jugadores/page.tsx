@@ -1,8 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { Pill, SectionCard } from "@/components/ui";
+import { getViewerSession } from "@/lib/auth";
 import { getDashboardData, getPlayersPageData } from "@/lib/data";
 
 export default async function PlayersPage() {
+  const viewer = await getViewerSession();
   const { navItems, nextMatch } = await getDashboardData();
   const { clusterPlayers } = await getPlayersPageData();
 
@@ -12,6 +14,7 @@ export default async function PlayersPage() {
       subtitle="Listado del cluster de futbol con estado actual, roles y espacio para futuras invitaciones por QR."
       navItems={navItems}
       nextMatch={nextMatch}
+      viewer={viewer}
     >
       <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <SectionCard eyebrow="Cluster" title="Base actual de jugadores">

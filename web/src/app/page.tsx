@@ -3,9 +3,11 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { MatchCountdown } from "@/components/match-countdown";
 import { Pill, SectionCard } from "@/components/ui";
+import { getViewerSession } from "@/lib/auth";
 import { getDashboardData } from "@/lib/data";
 
 export default async function Home() {
+  const viewer = await getViewerSession();
   const { attendanceBoard, laundryDuty, leaderboard, navItems, nextMatch } =
     await getDashboardData();
 
@@ -15,6 +17,7 @@ export default async function Home() {
       subtitle="Vista principal para entrar rapido a confirmar asistencia, revisar si el partido ya esta armado y consultar el pulso de la semana."
       navItems={navItems}
       nextMatch={nextMatch}
+      viewer={viewer}
     >
       <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <SectionCard eyebrow="Accion rapida" title="Tu estado para esta fecha">

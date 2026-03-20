@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdminSession } from "@/lib/auth";
 import { buildProjectedAttendanceBoard, type PreviousPlayerInput } from "@/lib/match-selection";
 import { getSupabaseClient, hasSupabaseEnv } from "@/lib/supabase";
 
@@ -287,6 +288,7 @@ export async function updateMatchStatus(
   _previousState: MatchAdminActionState,
   formData: FormData,
 ): Promise<MatchAdminActionState> {
+  await requireAdminSession("/admin");
   const matchId = String(formData.get("matchId") ?? "");
   const status = String(formData.get("status") ?? "");
   const notes = String(formData.get("notes") ?? "").trim();
@@ -410,6 +412,7 @@ export async function updateAttendanceResponseByAdmin(
   _previousState: AttendanceAdminActionState,
   formData: FormData,
 ): Promise<AttendanceAdminActionState> {
+  await requireAdminSession("/admin");
   const matchId = String(formData.get("matchId") ?? "");
   const playerId = String(formData.get("playerId") ?? "");
   const response = String(formData.get("response") ?? "");
@@ -545,6 +548,7 @@ export async function updateMatchParticipantStatusByAdmin(
   _previousState: ParticipantAdminActionState,
   formData: FormData,
 ): Promise<ParticipantAdminActionState> {
+  await requireAdminSession("/admin");
   const matchId = String(formData.get("matchId") ?? "");
   const playerId = String(formData.get("playerId") ?? "");
   const attendanceStatus = String(formData.get("attendanceStatus") ?? "");
@@ -633,6 +637,7 @@ export async function saveMatchTeamsByAdmin(
   _previousState: MatchResultAdminActionState,
   formData: FormData,
 ): Promise<MatchResultAdminActionState> {
+  await requireAdminSession("/admin");
   const matchId = String(formData.get("matchId") ?? "");
   const teamAId = String(formData.get("teamAId") ?? "");
   const teamAName = String(formData.get("teamAName") ?? "").trim();
@@ -704,6 +709,7 @@ export async function assignParticipantTeamByAdmin(
   _previousState: MatchResultAdminActionState,
   formData: FormData,
 ): Promise<MatchResultAdminActionState> {
+  await requireAdminSession("/admin");
   const matchId = String(formData.get("matchId") ?? "");
   const playerId = String(formData.get("playerId") ?? "");
   const teamId = String(formData.get("teamId") ?? "");
@@ -756,6 +762,7 @@ export async function addGoalByAdmin(
   _previousState: MatchResultAdminActionState,
   formData: FormData,
 ): Promise<MatchResultAdminActionState> {
+  await requireAdminSession("/admin");
   const matchId = String(formData.get("matchId") ?? "");
   const scorerPlayerId = String(formData.get("scorerPlayerId") ?? "");
   const teamId = String(formData.get("teamId") ?? "");
@@ -813,6 +820,7 @@ export async function deleteGoalByAdmin(
   _previousState: MatchResultAdminActionState,
   formData: FormData,
 ): Promise<MatchResultAdminActionState> {
+  await requireAdminSession("/admin");
   const goalId = String(formData.get("goalId") ?? "");
 
   if (!goalId) {

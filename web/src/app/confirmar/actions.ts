@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireViewerSession } from "@/lib/auth";
 import { getSupabaseClient, hasSupabaseEnv } from "@/lib/supabase";
 
 export type AvailabilityActionState = {
@@ -36,8 +37,9 @@ export async function submitAvailabilityResponse(
   _previousState: AvailabilityActionState,
   formData: FormData,
 ): Promise<AvailabilityActionState> {
+  const viewer = await requireViewerSession("/confirmar");
   const matchId = String(formData.get("matchId") ?? "");
-  const playerId = String(formData.get("playerId") ?? "");
+  const playerId = viewer.playerId;
   const response = String(formData.get("response") ?? "");
 
   if (!playerId || !response) {

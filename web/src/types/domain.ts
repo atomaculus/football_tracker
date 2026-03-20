@@ -136,6 +136,7 @@ export type AvailabilityPageData = {
   attendanceSummary: AttendanceSummary;
   availabilityOptions: AvailabilityOption[];
   currentMatch: NextMatch;
+  currentPlayer?: ClusterPlayer;
   currentMode: "demo" | "supabase";
   matchId: string;
   players: ClusterPlayer[];

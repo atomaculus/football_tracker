@@ -893,6 +893,7 @@ export async function getAvailabilityPageData(): Promise<AvailabilityPageData> {
     attendanceSummary,
     availabilityOptions: availabilityOptionsSeed,
     currentMatch: dashboardData.nextMatch,
+    currentPlayer: players?.[0] ?? clusterPlayersSeed[0],
     currentMode: hasSupabaseEnv() && upcomingMatch ? "supabase" : "demo",
     matchId: upcomingMatch?.id ?? "seed-next-match",
     matchNotes: dashboardData.nextMatch.notes,

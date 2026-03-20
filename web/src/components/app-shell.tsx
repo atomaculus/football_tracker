@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { ReactNode } from "react";
 
+import { logoutAction } from "@/app/login/actions";
 import { navItemsSeed, nextMatchSeed } from "@/lib/seed-data";
+import type { ViewerSession } from "@/lib/auth";
 import type { NavItem, NextMatch } from "@/types/domain";
 
 type AppShellProps = {
@@ -10,6 +12,7 @@ type AppShellProps = {
   subtitle: string;
   navItems?: NavItem[];
   nextMatch?: NextMatch;
+  viewer?: ViewerSession | null;
 };
 
 export function AppShell({
@@ -18,7 +21,10 @@ export function AppShell({
   subtitle,
   navItems = navItemsSeed,
   nextMatch = nextMatchSeed,
+  viewer = null,
 }: AppShellProps) {
+  const filteredNavItems = navItems.filter((item) => item.href !== "/admin" || viewer?.isAdmin);
+
   return (
     <main className="grain min-h-screen px-4 py-5 sm:px-6 lg:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
@@ -32,6 +38,12 @@ export function AppShell({
                 <span>2 admins</span>
                 <span>7v7</span>
                 <span>Fallback 6v6</span>
+                {viewer ? (
+                  <span className="rounded-full bg-[#efe7d5] px-3 py-1 text-foreground">
+                    {viewer.playerName}
+                    {viewer.isAdmin ? " · admin" : ""}
+                  </span>
+                ) : null}
               </div>
               <h1 className="mt-5 text-4xl font-black sm:text-5xl">{title}</h1>
               <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
@@ -74,6 +86,25 @@ export function AppShell({
                     <p className="mt-1 text-3xl font-black">{nextMatch.missing}</p>
                   </div>
                 </div>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  {viewer ? (
+                    <form action={logoutAction}>
+                      <button
+                        type="submit"
+                        className="rounded-full border border-line bg-background/40 px-4 py-2 text-sm font-semibold transition hover:border-foreground"
+                      >
+                        Cerrar sesion
+                      </button>
+                    </form>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="rounded-full border border-line bg-background/40 px-4 py-2 text-sm font-semibold transition hover:border-foreground"
+                    >
+                      Iniciar sesion
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -81,7 +112,7 @@ export function AppShell({
 
         <nav className="card-shadow sticky top-4 z-10 overflow-x-auto rounded-[1.6rem] border border-line bg-surface/95 px-3 py-3 backdrop-blur">
           <div className="flex min-w-max gap-2">
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

@@ -47,6 +47,7 @@ export function AvailabilityForm({
   attendanceSummary,
   availabilityOptions,
   currentMatch,
+  currentPlayer,
   lateDropAllowed,
   matchId,
   matchNotes,
@@ -59,6 +60,7 @@ export function AvailabilityForm({
   attendanceSummary: AttendanceSummary;
   availabilityOptions: AvailabilityOption[];
   currentMatch: NextMatch;
+  currentPlayer?: ClusterPlayer;
   lateDropAllowed: boolean;
   matchId: string;
   matchNotes?: string;
@@ -70,7 +72,7 @@ export function AvailabilityForm({
   const [selectedResponse, setSelectedResponse] = useState(
     availabilityOptions[0]?.value ?? "going",
   );
-  const [selectedPlayerId, setSelectedPlayerId] = useState(players[0]?.id ?? "");
+  const [selectedPlayerId, setSelectedPlayerId] = useState(currentPlayer?.id ?? players[0]?.id ?? "");
   const [actionState, formAction] = useActionState(
     submitAvailabilityResponse,
     initialAvailabilityActionState,
@@ -103,25 +105,37 @@ export function AvailabilityForm({
         <form action={formAction} className="grid gap-4">
           <input type="hidden" name="matchId" value={matchId} />
           <input type="hidden" name="response" value={selectedResponse} />
+          {currentPlayer ? <input type="hidden" name="playerId" value={currentPlayer.id} /> : null}
 
-          <label className="grid gap-2">
-            <span className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
-              Jugador
-            </span>
-            <select
-              name="playerId"
-              value={selectedPlayerId}
-              onChange={(event) => setSelectedPlayerId(event.target.value)}
-              disabled={!submissionsOpen && !lateDropAllowed}
-              className="rounded-[1.2rem] border border-line bg-surface-strong px-4 py-4 text-base font-semibold outline-none transition focus:border-foreground disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {players.map((player) => (
-                <option key={player.id} value={player.id}>
-                  {player.name} {" · "} {player.role}
-                </option>
-              ))}
-            </select>
-          </label>
+          {currentPlayer ? (
+            <div className="rounded-[1.2rem] border border-line bg-surface-strong px-4 py-4">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
+                Jugador autenticado
+              </p>
+              <p className="mt-2 text-lg font-extrabold">
+                {currentPlayer.name} {" · "} {currentPlayer.role}
+              </p>
+            </div>
+          ) : (
+            <label className="grid gap-2">
+              <span className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
+                Jugador
+              </span>
+              <select
+                name="playerId"
+                value={selectedPlayerId}
+                onChange={(event) => setSelectedPlayerId(event.target.value)}
+                disabled={!submissionsOpen && !lateDropAllowed}
+                className="rounded-[1.2rem] border border-line bg-surface-strong px-4 py-4 text-base font-semibold outline-none transition focus:border-foreground disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {players.map((player) => (
+                  <option key={player.id} value={player.id}>
+                    {player.name} {" · "} {player.role}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           <div className="grid gap-3">
             {availabilityOptions.map((option) => {
@@ -257,8 +271,8 @@ export function AvailabilityForm({
           </div>
 
           <p>
-            Sin login todavia, esta pantalla usa un selector de jugador para probar el flujo
-            real. Cuando entremos con telefono, cada uno va a confirmar por su cuenta.
+            Esta pantalla ya toma el jugador autenticado y guarda la respuesta sobre esa
+            identidad. El selector libre queda solo como fallback de desarrollo.
           </p>
           <p>
             {mode === "supabase"
