@@ -31,9 +31,11 @@ function SaveButton({ disabled }: { disabled: boolean }) {
 
 function AttendanceRow({
   entry,
+  editable,
   matchId,
 }: {
   entry: AttendanceEntry;
+  editable: boolean;
   matchId?: string;
 }) {
   const [actionState, formAction] = useActionState(
@@ -64,7 +66,7 @@ function AttendanceRow({
         <select
           name="response"
           defaultValue={entry.responseValue ?? "going"}
-          disabled={!matchId || !entry.playerId}
+          disabled={!editable || !matchId || !entry.playerId}
           className="min-w-[12rem] rounded-[1rem] border border-white/12 bg-white/8 px-4 py-3 text-sm font-semibold text-white outline-none transition focus:border-white/40 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <option value="going" className="text-foreground">
@@ -77,7 +79,7 @@ function AttendanceRow({
             No va
           </option>
         </select>
-        <SaveButton disabled={!matchId || !entry.playerId} />
+        <SaveButton disabled={!editable || !matchId || !entry.playerId} />
       </div>
 
       {actionState.status !== "idle" ? (
@@ -101,12 +103,14 @@ export function AdminAttendanceManager({
   attendanceBoard,
   attendanceSummary,
   currentMatchId,
+  editable,
   projectedStarters,
   projectedSubstitutes,
 }: {
   attendanceBoard: AttendanceEntry[];
   attendanceSummary: { backups: number; confirmed: number; declined: number };
   currentMatchId?: string;
+  editable: boolean;
   projectedStarters: number;
   projectedSubstitutes: number;
 }) {
@@ -122,6 +126,10 @@ export function AdminAttendanceManager({
         <div className="rounded-[1.2rem] border border-white/10 bg-white/6 px-4 py-3 text-sm leading-6 text-white/78">
           No hay un partido activo para editar respuestas desde admin.
         </div>
+      ) : !editable ? (
+        <div className="rounded-[1.2rem] border border-white/10 bg-white/6 px-4 py-3 text-sm leading-6 text-white/78">
+          La lista queda congelada mientras la convocatoria no este abierta.
+        </div>
       ) : null}
 
       <div className="space-y-3">
@@ -129,6 +137,7 @@ export function AdminAttendanceManager({
           <AttendanceRow
             key={`${entry.playerId ?? entry.name}-${entry.detail}`}
             entry={entry}
+            editable={editable}
             matchId={currentMatchId}
           />
         ))}
