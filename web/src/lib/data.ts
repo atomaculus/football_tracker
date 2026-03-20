@@ -26,6 +26,8 @@ import type {
   DashboardData,
   HistoryPageData,
   MatchPageData,
+  MatchParticipantEntry,
+  MatchParticipantSummary,
   NextMatch,
   PlayersPageData,
 } from "@/types/domain";
@@ -50,6 +52,13 @@ type AttendanceQueryRow = {
 };
 
 type PreviousPlayerRow = PreviousPlayerInput;
+type MatchParticipantRow = {
+  attendance_status: "confirmed" | "played" | "late_cancel" | "no_show";
+  player_id: string;
+  players: { full_name?: string } | { full_name?: string }[] | null;
+  priority_note: string | null;
+  role: "starter" | "substitute" | "guest";
+};
 
 function formatMatchDate(date: string) {
   const parsedDate = new Date(`${date}T12:00:00`);
@@ -240,10 +249,10 @@ function getAdminInsights(nextMatch: NextMatch, attendanceSummary: AttendanceSum
           }
         : nextMatch.rawStatus === "closed"
           ? {
-              detail: "La convocatoria ya esta cerrada. Lo siguiente es ordenar lista final, camisetas y armado de equipos.",
+              detail: "La convocatoria ya esta cerrada. Lo siguiente es registrar quienes jugaron de verdad, las bajas tardias y los no-show.",
               label: "Siguiente accion",
               tone: "default" as const,
-              value: "Armar fecha",
+              value: "Cerrar asistencia real",
             }
           : {
               detail: "El admin ya puede mover el estado del partido. El siguiente bloque natural es conectar armado de lista y equipos.",
@@ -451,6 +460,59 @@ async function getAttendanceForMatch(matchId: string) {
   };
 }
 
+async function getMatchParticipantsForMatch(matchId: string) {
+  if (!hasSupabaseEnv()) {
+    return null;
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("match_participants")
+    .select("attendance_status, player_id, priority_note, role, players(full_name)")
+    .eq("match_id", matchId)
+    .order("priority_score", { ascending: false });
+
+  if (error || !data) {
+    return null;
+  }
+
+  const participants = (data as MatchParticipantRow[]).map(
+    (participant): MatchParticipantEntry => ({
+      attendanceStatus: participant.attendance_status,
+      name: getPlayerName(participant.players),
+      playerId: participant.player_id,
+      priorityNote: participant.priority_note ?? undefined,
+      role: participant.role,
+    }),
+  );
+
+  const summary = participants.reduce<MatchParticipantSummary>(
+    (accumulator, participant) => {
+      if (participant.attendanceStatus === "played") {
+        accumulator.played += 1;
+      } else if (participant.attendanceStatus === "late_cancel") {
+        accumulator.lateCancels += 1;
+      } else if (participant.attendanceStatus === "no_show") {
+        accumulator.noShow += 1;
+      } else {
+        accumulator.confirmed += 1;
+      }
+
+      return accumulator;
+    },
+    { confirmed: 0, lateCancels: 0, noShow: 0, played: 0 },
+  );
+
+  return {
+    participants,
+    summary,
+  };
+}
+
 export async function getDashboardData(): Promise<DashboardData> {
   const upcomingMatch = await getUpcomingMatchFromSupabase();
   const attendanceData = upcomingMatch
@@ -528,6 +590,9 @@ export async function getAdminPageData(): Promise<AdminPageData> {
     ? await getAttendanceForMatch(upcomingMatch.id)
     : null;
   const previousRoster = upcomingMatch ? await getLatestPlayedRoster(upcomingMatch.id) : null;
+  const currentParticipants = upcomingMatch
+    ? await getMatchParticipantsForMatch(upcomingMatch.id)
+    : null;
   const currentMatch = buildNextMatch(upcomingMatch, attendanceData?.counts);
   const attendanceSummary: AttendanceSummary = attendanceData?.attendanceSummary ?? {
     backups: currentMatch.substitutes,
@@ -543,6 +608,13 @@ export async function getAdminPageData(): Promise<AdminPageData> {
 
   return {
     adminInsights: getAdminInsights(currentMatch, attendanceSummary),
+    actualParticipants: currentParticipants?.participants ?? [],
+    actualParticipantSummary: currentParticipants?.summary ?? {
+      confirmed: 0,
+      lateCancels: 0,
+      noShow: 0,
+      played: 0,
+    },
     attendanceBoard: projectedBoard.attendanceBoard,
     attendanceSummary,
     currentMatch,

@@ -15,6 +15,11 @@ export type AttendanceAdminActionState = {
   status: "idle" | "success" | "error" | "demo";
 };
 
+export type ParticipantAdminActionState = {
+  message: string;
+  status: "idle" | "success" | "error" | "demo";
+};
+
 type AttendanceQueryRow = {
   player_id: string;
   players: { full_name?: string } | { full_name?: string }[] | null;
@@ -316,6 +321,33 @@ export async function updateMatchStatus(
     };
   }
 
+  if (status === "played") {
+    const { data: participants, error: participantsError } = await supabase
+      .from("match_participants")
+      .select("attendance_status")
+      .eq("match_id", matchId);
+
+    if (participantsError || !participants) {
+      return {
+        message: "No se pudo validar la asistencia real del partido.",
+        status: "error",
+      };
+    }
+
+    const playedCount = participants.filter(
+      (participant) => participant.attendance_status === "played",
+    ).length;
+
+    if (playedCount === 0) {
+      await supabase.from("matches").update({ status: "closed" }).eq("id", matchId);
+
+      return {
+        message: "Antes de marcar el partido como jugado, carga al menos un participante con estado `Jugo`.",
+        status: "error",
+      };
+    }
+  }
+
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/confirmar");
@@ -457,6 +489,94 @@ export async function updateAttendanceResponseByAdmin(
     message: submissionsOpen
       ? "Respuesta actualizada desde admin."
       : "Baja tardia aplicada. La lista final ya corrio al siguiente suplente.",
+    status: "success",
+  };
+}
+
+export async function updateMatchParticipantStatusByAdmin(
+  _previousState: ParticipantAdminActionState,
+  formData: FormData,
+): Promise<ParticipantAdminActionState> {
+  const matchId = String(formData.get("matchId") ?? "");
+  const playerId = String(formData.get("playerId") ?? "");
+  const attendanceStatus = String(formData.get("attendanceStatus") ?? "");
+
+  if (!matchId || !playerId || !attendanceStatus) {
+    return {
+      message: "Falta el partido, el jugador o el estado final.",
+      status: "error",
+    };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return {
+      message: "La carga final queda activa cuando la app usa Supabase real.",
+      status: "demo",
+    };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return {
+      message: "No se pudo conectar con Supabase.",
+      status: "error",
+    };
+  }
+
+  const { data: match, error: matchError } = await supabase
+    .from("matches")
+    .select("status")
+    .eq("id", matchId)
+    .maybeSingle<{ status: MatchAdminRow["status"] }>();
+
+  if (matchError || !match) {
+    return {
+      message: "No se encontro el partido para registrar la asistencia real.",
+      status: "error",
+    };
+  }
+
+  if (!["closed", "played"].includes(match.status)) {
+    return {
+      message: "La asistencia real se carga una vez cerrada la convocatoria.",
+      status: "error",
+    };
+  }
+
+  const normalizedStatus =
+    attendanceStatus === "played" ||
+    attendanceStatus === "late_cancel" ||
+    attendanceStatus === "no_show" ||
+    attendanceStatus === "confirmed"
+      ? attendanceStatus
+      : null;
+
+  if (!normalizedStatus) {
+    return {
+      message: "El estado final del jugador no es valido.",
+      status: "error",
+    };
+  }
+
+  const { error } = await supabase
+    .from("match_participants")
+    .update({ attendance_status: normalizedStatus })
+    .eq("match_id", matchId)
+    .eq("player_id", playerId);
+
+  if (error) {
+    return {
+      message: "No se pudo guardar el estado final del jugador.",
+      status: "error",
+    };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/confirmar");
+
+  return {
+    message: "Asistencia real actualizada.",
     status: "success",
   };
 }

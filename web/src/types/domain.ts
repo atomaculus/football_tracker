@@ -41,6 +41,21 @@ export type AttendanceSummary = {
   totalResponses: number;
 };
 
+export type MatchParticipantEntry = {
+  playerId: string;
+  name: string;
+  role: "starter" | "substitute" | "guest";
+  attendanceStatus: "confirmed" | "played" | "late_cancel" | "no_show";
+  priorityNote?: string;
+};
+
+export type MatchParticipantSummary = {
+  confirmed: number;
+  played: number;
+  lateCancels: number;
+  noShow: number;
+};
+
 export type AdminInsight = {
   detail: string;
   label: string;
@@ -141,6 +156,8 @@ export type AdminPageData = {
   adminInsights: AdminInsight[];
   currentMatch: NextMatch;
   laundryDuty: LaundryDuty;
+  actualParticipants: MatchParticipantEntry[];
+  actualParticipantSummary: MatchParticipantSummary;
   projectedStarters: number;
   projectedSubstitutes: number;
 };

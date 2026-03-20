@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { AdminAttendanceManager } from "@/components/admin-attendance-manager";
+import { AdminFinalRosterManager } from "@/components/admin-final-roster-manager";
 import { AdminMatchControls } from "@/components/admin-match-controls";
 import { Pill, SectionCard } from "@/components/ui";
 import { getAdminPageData, getDashboardData } from "@/lib/data";
@@ -8,6 +9,8 @@ export default async function AdminPage() {
   const { navItems, nextMatch } = await getDashboardData();
   const {
     adminInsights,
+    actualParticipants,
+    actualParticipantSummary,
     attendanceBoard,
     attendanceSummary,
     currentMatch,
@@ -90,6 +93,13 @@ export default async function AdminPage() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <AdminFinalRosterManager
+          currentMatchId={currentMatch.id}
+          editable={currentMatch.rawStatus === "closed" || currentMatch.rawStatus === "played"}
+          participantSummary={actualParticipantSummary}
+          participants={actualParticipants}
+        />
+
         <SectionCard eyebrow="Camisetas" title="Encargado de lavado">
           <div className="rounded-[1.5rem] border border-line bg-surface-strong p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -117,15 +127,18 @@ export default async function AdminPage() {
           </div>
         </SectionCard>
 
-        <SectionCard eyebrow="Backlog" title="Regla operativa" dark>
+        <SectionCard eyebrow="Roadmap" title="Etapas pendientes" dark>
           <div className="space-y-4 text-sm leading-6 text-white/78">
             <p>
-              La app puede asignar el lavado por turnos entre los que jugaron la fecha y
-              permitir override manual si justo el encargado no va el martes siguiente.
+              Etapa 5 en curso: cierre real del partido desde admin para alimentar prioridad,
+              historial y estadisticas sin depender del Excel.
             </p>
             <p>
-              Mas adelante se puede agregar modo aleatorio, pero para el grupo real la
-              rotacion ordenada probablemente sea mas justa y mas simple de auditar.
+              Etapa 6: carga de equipos, resultado y goleadores.
+            </p>
+            <p>
+              Etapa 7: historial real, estadisticas acumuladas y logistica completa de
+              camisetas.
             </p>
           </div>
         </SectionCard>
