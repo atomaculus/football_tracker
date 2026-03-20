@@ -119,7 +119,7 @@ export default async function Home() {
           </div>
         </SectionCard>
 
-        <SectionCard eyebrow="Ranking demo" title="Pulso del grupo">
+        <SectionCard eyebrow="Estadisticas" title="Pulso del grupo">
           <div className="overflow-hidden rounded-[1.4rem] border border-line">
             <div className="grid grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr] bg-surface-strong px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted">
               <span>Jugador</span>

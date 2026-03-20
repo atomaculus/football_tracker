@@ -116,6 +116,10 @@ export type LeaderboardEntry = {
   presences: number;
   goals: number;
   diff: string;
+  draws?: number;
+  losses?: number;
+  successRate?: string;
+  wins?: number;
 };
 
 export type AdminAction = string;

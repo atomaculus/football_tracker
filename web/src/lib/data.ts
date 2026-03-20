@@ -78,6 +78,12 @@ type GoalRow = {
   team_id: string | null;
   players: { full_name?: string } | { full_name?: string }[] | null;
 };
+type PlayedMatchRow = {
+  id: string;
+  match_date: string;
+  notes: string | null;
+  status: "played";
+};
 
 function formatMatchDate(date: string) {
   const parsedDate = new Date(`${date}T12:00:00`);
@@ -626,18 +632,240 @@ async function getTeamsAndGoalsForMatch(matchId: string) {
   };
 }
 
+async function getPlayedMatchesFromSupabase() {
+  if (!hasSupabaseEnv()) {
+    return null;
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data: matches, error: matchesError } = await supabase
+    .from("matches")
+    .select("id, match_date, notes, status")
+    .eq("status", "played")
+    .order("match_date", { ascending: false });
+
+  if (matchesError || !matches) {
+    return null;
+  }
+
+  return matches as PlayedMatchRow[];
+}
+
+async function getRealHistoryMatches() {
+  const playedMatches = await getPlayedMatchesFromSupabase();
+
+  if (!playedMatches?.length) {
+    return null;
+  }
+
+  const historyMatches = await Promise.all(
+    playedMatches.map(async (match) => {
+      const teamsAndGoals = await getTeamsAndGoalsForMatch(match.id);
+
+      if (!teamsAndGoals) {
+        return {
+          attendance: "Datos parciales",
+          date: formatMatchDate(match.match_date),
+          notes: match.notes ?? "Partido cargado sin detalle extra.",
+          result: "Resultado pendiente",
+        };
+      }
+
+      const playedCount = teamsAndGoals.matchTeams.reduce(
+        (accumulator, team) => accumulator + team.players.length,
+        0,
+      );
+      const [teamA, teamB] = teamsAndGoals.matchTeams;
+      const result =
+        teamA && teamB
+          ? `${teamA.name} ${teamA.score} - ${teamB.score} ${teamB.name}`
+          : "Resultado pendiente";
+
+      return {
+        attendance: `${playedCount || 0} jugadores`,
+        date: formatMatchDate(match.match_date),
+        notes:
+          match.notes ??
+          (playedCount >= 14
+            ? "Partido completo 7v7."
+            : playedCount >= 12
+              ? "Fecha jugada con formato corto."
+              : "Fecha cargada con menos del minimo habitual."),
+        result,
+      };
+    }),
+  );
+
+  return historyMatches;
+}
+
+async function getRealLeaderboard() {
+  if (!hasSupabaseEnv()) {
+    return null;
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const [{ data: playedMatches, error: matchesError }, { data: participants, error: participantsError }, { data: teams, error: teamsError }, { data: goals, error: goalsError }] =
+    await Promise.all([
+      supabase
+        .from("matches")
+        .select("id")
+        .eq("status", "played"),
+      supabase
+        .from("match_participants")
+        .select("match_id, player_id, attendance_status, team_id, players(full_name)")
+        .eq("attendance_status", "played"),
+      supabase.from("teams").select("id, match_id, goals"),
+      supabase
+        .from("goals")
+        .select("match_id, scorer_player_id, is_own_goal"),
+    ]);
+
+  if (matchesError || participantsError || teamsError || goalsError) {
+    return null;
+  }
+
+  const playedMatchIds = new Set((playedMatches ?? []).map((match) => match.id));
+  const typedParticipants = ((participants ?? []) as Array<{
+    attendance_status: "played";
+    match_id: string;
+    player_id: string;
+    players: { full_name?: string } | { full_name?: string }[] | null;
+    team_id: string | null;
+  }>).filter((participant) => playedMatchIds.has(participant.match_id));
+  const typedTeams = (teams ?? []) as Array<{ goals: number; id: string; match_id: string }>;
+  const typedGoals = ((goals ?? []) as Array<{
+    is_own_goal: boolean;
+    match_id: string;
+    scorer_player_id: string;
+  }>).filter((goal) => playedMatchIds.has(goal.match_id));
+
+  const teamsByMatch = typedTeams.reduce<Map<string, Array<{ goals: number; id: string }>>>(
+    (accumulator, team) => {
+      const existingTeams = accumulator.get(team.match_id) ?? [];
+      existingTeams.push({ goals: team.goals, id: team.id });
+      accumulator.set(team.match_id, existingTeams);
+      return accumulator;
+    },
+    new Map(),
+  );
+
+  const playerStats = new Map<
+    string,
+    {
+      diff: number;
+      goals: number;
+      losses: number;
+      name: string;
+      presences: number;
+      draws: number;
+      wins: number;
+    }
+  >();
+
+  for (const participant of typedParticipants) {
+    const stat = playerStats.get(participant.player_id) ?? {
+      diff: 0,
+      draws: 0,
+      goals: 0,
+      losses: 0,
+      name: getPlayerName(participant.players),
+      presences: 0,
+      wins: 0,
+    };
+    stat.presences += 1;
+
+    if (participant.team_id) {
+      const matchTeams = teamsByMatch.get(participant.match_id) ?? [];
+      const ownTeam = matchTeams.find((team) => team.id === participant.team_id);
+      const opponentGoals = matchTeams
+        .filter((team) => team.id !== participant.team_id)
+        .reduce((accumulator, team) => accumulator + team.goals, 0);
+
+      if (ownTeam) {
+        const goalDiff = ownTeam.goals - opponentGoals;
+        stat.diff += goalDiff;
+
+        if (goalDiff > 0) {
+          stat.wins += 1;
+        } else if (goalDiff < 0) {
+          stat.losses += 1;
+        } else {
+          stat.draws += 1;
+        }
+      }
+    }
+
+    playerStats.set(participant.player_id, stat);
+  }
+
+  for (const goal of typedGoals) {
+    if (goal.is_own_goal) {
+      continue;
+    }
+
+    const stat = playerStats.get(goal.scorer_player_id);
+
+    if (stat) {
+      stat.goals += 1;
+    }
+  }
+
+  const leaderboard = Array.from(playerStats.values())
+    .map((player) => {
+      const totalResults = player.wins + player.draws + player.losses;
+      const successRate =
+        totalResults > 0
+          ? `${Math.round(((player.wins + player.draws * 0.5) / totalResults) * 100)}%`
+          : "0%";
+
+      return {
+        diff: player.diff >= 0 ? `+${player.diff}` : `${player.diff}`,
+        draws: player.draws,
+        goals: player.goals,
+        losses: player.losses,
+        name: player.name,
+        presences: player.presences,
+        successRate,
+        wins: player.wins,
+      };
+    })
+    .sort((left, right) => {
+      if (right.presences !== left.presences) {
+        return right.presences - left.presences;
+      }
+
+      if (right.goals !== left.goals) {
+        return right.goals - left.goals;
+      }
+
+      return Number.parseInt(right.diff, 10) - Number.parseInt(left.diff, 10);
+    });
+
+  return leaderboard;
+}
+
 export async function getDashboardData(): Promise<DashboardData> {
   const upcomingMatch = await getUpcomingMatchFromSupabase();
   const attendanceData = upcomingMatch
     ? await getAttendanceForMatch(upcomingMatch.id)
     : null;
+  const leaderboard = await getRealLeaderboard();
 
   return {
     attendanceBoard:
       attendanceData?.attendanceBoard.length
         ? attendanceData.attendanceBoard
         : attendanceBoardSeed,
-    leaderboard: leaderboardSeed,
+    leaderboard: leaderboard?.length ? leaderboard : leaderboardSeed,
     laundryDuty: laundryDutySeed,
     navItems: navItemsSeed,
     nextMatch: buildNextMatch(upcomingMatch, attendanceData?.counts),
@@ -715,9 +943,14 @@ export async function getMatchPageData(): Promise<MatchPageData> {
 }
 
 export async function getHistoryPageData(): Promise<HistoryPageData> {
+  const [historyMatches, leaderboard] = await Promise.all([
+    getRealHistoryMatches(),
+    getRealLeaderboard(),
+  ]);
+
   return {
-    historyMatches: historyMatchesSeed,
-    leaderboard: leaderboardSeed,
+    historyMatches: historyMatches?.length ? historyMatches : historyMatchesSeed,
+    leaderboard: leaderboard?.length ? leaderboard : leaderboardSeed,
   };
 }
 
