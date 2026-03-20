@@ -5,7 +5,13 @@ import { useFormStatus } from "react-dom";
 
 import { submitAvailabilityResponse } from "@/app/confirmar/actions";
 import { Pill, SectionCard } from "@/components/ui";
-import type { AttendanceEntry, AvailabilityOption, ClusterPlayer } from "@/types/domain";
+import type {
+  AttendanceEntry,
+  AttendanceSummary,
+  AvailabilityOption,
+  ClusterPlayer,
+  NextMatch,
+} from "@/types/domain";
 
 const initialAvailabilityActionState = {
   message: "",
@@ -38,7 +44,9 @@ function SubmitButton({
 
 export function AvailabilityForm({
   attendanceBoard,
+  attendanceSummary,
   availabilityOptions,
+  currentMatch,
   matchId,
   matchNotes,
   matchStatus,
@@ -47,7 +55,9 @@ export function AvailabilityForm({
   submissionsOpen,
 }: {
   attendanceBoard: AttendanceEntry[];
+  attendanceSummary: AttendanceSummary;
   availabilityOptions: AvailabilityOption[];
+  currentMatch: NextMatch;
   matchId: string;
   matchNotes?: string;
   matchStatus: string;
@@ -67,6 +77,17 @@ export function AvailabilityForm({
   const selectedOption = availabilityOptions.find(
     (option) => option.value === selectedResponse,
   );
+  const statusTone =
+    currentMatch.rawStatus === "open"
+      ? "lime"
+      : currentMatch.rawStatus === "suspended"
+        ? "accent"
+        : "default";
+  const statusMessage = submissionsOpen
+    ? "La convocatoria esta abierta y cualquier cambio impacta en la lista del martes."
+    : currentMatch.rawStatus === "suspended"
+      ? "La fecha esta suspendida. El admin puede dejar una nota, pero no se aceptan nuevas respuestas."
+      : "La lista esta cerrada por ahora. Solo el admin puede reabrir la convocatoria.";
 
   return (
     <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
@@ -178,6 +199,49 @@ export function AvailabilityForm({
 
       <SectionCard eyebrow="Contexto" title="Como impacta tu respuesta" dark>
         <div className="space-y-4 text-sm leading-6 text-white/78">
+          <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
+                  Estado del partido
+                </p>
+                <p className="mt-2 text-2xl font-black">
+                  {currentMatch.dateLabel} {" · "} {currentMatch.timeLabel}
+                </p>
+                <p className="mt-1 text-sm text-white/60">{currentMatch.venue}</p>
+              </div>
+              <Pill tone={statusTone}>{matchStatus}</Pill>
+            </div>
+            <p className="mt-4 text-white/78">{statusMessage}</p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-[1.2rem] border border-white/10 bg-white/6 p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
+                Confirmados
+              </p>
+              <p className="mt-2 text-3xl font-black">{attendanceSummary.confirmed}</p>
+            </div>
+            <div className="rounded-[1.2rem] border border-white/10 bg-white/6 p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
+                Suplentes
+              </p>
+              <p className="mt-2 text-3xl font-black">{attendanceSummary.backups}</p>
+            </div>
+            <div className="rounded-[1.2rem] border border-white/10 bg-white/6 p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
+                No van
+              </p>
+              <p className="mt-2 text-3xl font-black">{attendanceSummary.declined}</p>
+            </div>
+            <div className="rounded-[1.2rem] border border-white/10 bg-white/6 p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
+                Faltan para el ideal
+              </p>
+              <p className="mt-2 text-3xl font-black">{currentMatch.missing}</p>
+            </div>
+          </div>
+
           <p>
             Sin login todavia, esta pantalla usa un selector de jugador para probar el flujo
             real. Cuando entremos con telefono, cada uno va a confirmar por su cuenta.

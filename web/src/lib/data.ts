@@ -370,10 +370,21 @@ export async function getAvailabilityPageData(): Promise<AvailabilityPageData> {
     getPlayersFromSupabase(),
     getUpcomingMatchFromSupabase(),
   ]);
+  const attendanceData = upcomingMatch
+    ? await getAttendanceForMatch(upcomingMatch.id)
+    : null;
+  const attendanceSummary: AttendanceSummary = attendanceData?.attendanceSummary ?? {
+    backups: dashboardData.nextMatch.substitutes,
+    confirmed: dashboardData.nextMatch.confirmed,
+    declined: 0,
+    totalResponses: dashboardData.attendanceBoard.length,
+  };
 
   return {
     attendanceBoard: dashboardData.attendanceBoard,
+    attendanceSummary,
     availabilityOptions: availabilityOptionsSeed,
+    currentMatch: dashboardData.nextMatch,
     currentMode: hasSupabaseEnv() && upcomingMatch ? "supabase" : "demo",
     matchId: upcomingMatch?.id ?? "seed-next-match",
     matchNotes: dashboardData.nextMatch.notes,

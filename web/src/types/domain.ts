@@ -94,7 +94,9 @@ export type ClusterPlayer = {
 
 export type AvailabilityPageData = {
   attendanceBoard: AttendanceEntry[];
+  attendanceSummary: AttendanceSummary;
   availabilityOptions: AvailabilityOption[];
+  currentMatch: NextMatch;
   currentMode: "demo" | "supabase";
   matchId: string;
   players: ClusterPlayer[];

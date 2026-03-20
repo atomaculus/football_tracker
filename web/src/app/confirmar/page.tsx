@@ -17,7 +17,9 @@ export default async function ConfirmPage() {
     >
       <AvailabilityForm
         attendanceBoard={availabilityData.attendanceBoard}
+        attendanceSummary={availabilityData.attendanceSummary}
         availabilityOptions={availabilityData.availabilityOptions}
+        currentMatch={availabilityData.currentMatch}
         matchId={availabilityData.matchId}
         matchNotes={availabilityData.matchNotes}
         matchStatus={availabilityData.matchStatus}
