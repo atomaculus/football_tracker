@@ -9,6 +9,12 @@ export type AvailabilityActionState = {
   status: "idle" | "success" | "error" | "demo";
 };
 
+type MatchAvailabilityRow = {
+  match_date: string;
+  start_time: string | null;
+  status: "scheduled" | "open" | "closed" | "played" | "cancelled" | "suspended";
+};
+
 function getSignupCutoffDate(matchDate?: string, startTime?: string | null) {
   if (!matchDate) {
     return null;
@@ -61,7 +67,7 @@ export async function submitAvailabilityResponse(
     .from("matches")
     .select("match_date, start_time, status")
     .eq("id", matchId)
-    .maybeSingle();
+    .maybeSingle<MatchAvailabilityRow>();
 
   if (matchError || !match) {
     return {
@@ -70,21 +76,45 @@ export async function submitAvailabilityResponse(
     };
   }
 
-  if (match.status !== "open") {
+  if (match.status === "suspended" || match.status === "cancelled" || match.status === "played") {
     return {
       message:
         match.status === "suspended"
           ? "La fecha esta suspendida. No se pueden cargar respuestas."
-          : "La convocatoria esta cerrada. No se pueden cambiar respuestas ahora.",
+          : "El partido ya no admite cambios de asistencia.",
+      status: "error",
+    };
+  }
+
+  const { data: existingResponse, error: existingResponseError } = await supabase
+    .from("availability_responses")
+    .select("response")
+    .eq("match_id", matchId)
+    .eq("player_id", playerId)
+    .maybeSingle<{ response: "going" | "backup" | "not_going" | "dropped" }>();
+
+  if (existingResponseError) {
+    return {
+      message: "No se pudo leer la respuesta actual del jugador.",
       status: "error",
     };
   }
 
   const signupCutoffDate = getSignupCutoffDate(match.match_date, match.start_time);
+  const submissionsOpen =
+    match.status === "open" &&
+    (signupCutoffDate ? Date.now() < signupCutoffDate.getTime() : true);
+  const lateDropRequested = response === "not_going";
+  const canLateDrop =
+    lateDropRequested &&
+    (existingResponse?.response === "going" || existingResponse?.response === "backup");
 
-  if (signupCutoffDate && Date.now() >= signupCutoffDate.getTime()) {
+  if (!submissionsOpen && !canLateDrop) {
     return {
-      message: "La convocatoria ya cerro por horario. No se pueden cambiar respuestas ahora.",
+      message:
+        match.status === "closed"
+          ? "La lista ya esta cerrada. Solo se permiten bajas tardias de jugadores ya anotados."
+          : "La convocatoria ya cerro por horario. Solo se permiten bajas tardias de jugadores ya anotados.",
       status: "error",
     };
   }
@@ -94,7 +124,7 @@ export async function submitAvailabilityResponse(
       match_id: matchId,
       player_id: playerId,
       responded_at: new Date().toISOString(),
-      response,
+      response: submissionsOpen ? response : "dropped",
     },
     {
       onConflict: "match_id,player_id",
@@ -113,7 +143,9 @@ export async function submitAvailabilityResponse(
   revalidatePath("/confirmar");
 
   return {
-    message: "Respuesta guardada. La lista del martes ya quedo actualizada.",
+    message: submissionsOpen
+      ? "Respuesta guardada. La lista del martes ya quedo actualizada."
+      : "Baja tardia registrada. El siguiente suplente ya puede ocupar ese lugar.",
     status: "success",
   };
 }

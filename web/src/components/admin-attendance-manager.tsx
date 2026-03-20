@@ -32,16 +32,21 @@ function SaveButton({ disabled }: { disabled: boolean }) {
 function AttendanceRow({
   entry,
   editable,
+  lateDropAllowed,
   matchId,
 }: {
   entry: AttendanceEntry;
   editable: boolean;
+  lateDropAllowed: boolean;
   matchId?: string;
 }) {
   const [actionState, formAction] = useActionState(
     updateAttendanceResponseByAdmin,
     initialAttendanceAdminActionState,
   );
+  const canEditThisRow = editable || (lateDropAllowed && entry.responseValue !== "not_going");
+  const defaultValue = editable ? (entry.responseValue ?? "going") : "not_going";
+  const isLateDropOnlyMode = !editable && lateDropAllowed;
 
   return (
     <form
@@ -65,21 +70,25 @@ function AttendanceRow({
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <select
           name="response"
-          defaultValue={entry.responseValue ?? "going"}
-          disabled={!editable || !matchId || !entry.playerId}
+          defaultValue={defaultValue}
+          disabled={!canEditThisRow || !matchId || !entry.playerId}
           className="min-w-[12rem] rounded-[1rem] border border-white/12 bg-white/8 px-4 py-3 text-sm font-semibold text-white outline-none transition focus:border-white/40 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <option value="going" className="text-foreground">
-            Titular
-          </option>
-          <option value="backup" className="text-foreground">
-            Suplente
-          </option>
+          {!isLateDropOnlyMode ? (
+            <option value="going" className="text-foreground">
+              Titular
+            </option>
+          ) : null}
+          {!isLateDropOnlyMode ? (
+            <option value="backup" className="text-foreground">
+              Suplente
+            </option>
+          ) : null}
           <option value="not_going" className="text-foreground">
             No va
           </option>
         </select>
-        <SaveButton disabled={!editable || !matchId || !entry.playerId} />
+        <SaveButton disabled={!canEditThisRow || !matchId || !entry.playerId} />
       </div>
 
       {actionState.status !== "idle" ? (
@@ -104,6 +113,7 @@ export function AdminAttendanceManager({
   attendanceSummary,
   currentMatchId,
   editable,
+  lateDropAllowed,
   projectedStarters,
   projectedSubstitutes,
 }: {
@@ -111,6 +121,7 @@ export function AdminAttendanceManager({
   attendanceSummary: { backups: number; confirmed: number; declined: number };
   currentMatchId?: string;
   editable: boolean;
+  lateDropAllowed: boolean;
   projectedStarters: number;
   projectedSubstitutes: number;
 }) {
@@ -126,6 +137,10 @@ export function AdminAttendanceManager({
         <div className="rounded-[1.2rem] border border-white/10 bg-white/6 px-4 py-3 text-sm leading-6 text-white/78">
           No hay un partido activo para editar respuestas desde admin.
         </div>
+      ) : !editable && lateDropAllowed ? (
+        <div className="rounded-[1.2rem] border border-white/10 bg-white/6 px-4 py-3 text-sm leading-6 text-white/78">
+          La lista ya cerro para nuevas altas. Desde admin solo conviene marcar bajas tardias.
+        </div>
       ) : !editable ? (
         <div className="rounded-[1.2rem] border border-white/10 bg-white/6 px-4 py-3 text-sm leading-6 text-white/78">
           La lista queda congelada mientras la convocatoria no este abierta.
@@ -138,6 +153,7 @@ export function AdminAttendanceManager({
             key={`${entry.playerId ?? entry.name}-${entry.detail}`}
             entry={entry}
             editable={editable}
+            lateDropAllowed={lateDropAllowed}
             matchId={currentMatchId}
           />
         ))}

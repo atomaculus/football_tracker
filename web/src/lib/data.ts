@@ -270,6 +270,7 @@ function buildNextMatch(
   const submissionsOpen =
     match.status === "open" &&
     (signupCutoffDate ? Date.now() < signupCutoffDate.getTime() : true);
+  const lateDropAllowed = match.status === "open" || match.status === "closed";
 
   return {
     confirmed,
@@ -286,6 +287,7 @@ function buildNextMatch(
     status: mapMatchStatus(match.status),
     substitutes,
     submissionsOpen,
+    lateDropAllowed,
     targetPlayers: match.target_players,
     timeLabel: formatMatchTime(match.start_time),
     venue: match.location ?? "Cancha a definir",
@@ -493,6 +495,7 @@ export async function getAvailabilityPageData(): Promise<AvailabilityPageData> {
     matchNotes: dashboardData.nextMatch.notes,
     matchStatus: dashboardData.nextMatch.status,
     players: players ?? clusterPlayersSeed.filter((player) => player.status !== "Inactivo"),
+    lateDropAllowed: dashboardData.nextMatch.lateDropAllowed ?? false,
     submissionsOpen: dashboardData.nextMatch.submissionsOpen ?? !upcomingMatch,
   };
 }

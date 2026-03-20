@@ -10,6 +10,7 @@ export type NextMatch = {
   isoTime?: string;
   signupClosesLabel?: string;
   submissionsOpen?: boolean;
+  lateDropAllowed?: boolean;
   timeLabel: string;
   venue: string;
   format: string;
@@ -109,6 +110,7 @@ export type AvailabilityPageData = {
   matchStatus: string;
   matchNotes?: string;
   submissionsOpen: boolean;
+  lateDropAllowed: boolean;
 };
 
 export type DashboardData = {

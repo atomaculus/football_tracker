@@ -22,6 +22,12 @@ type AttendanceQueryRow = {
   response: "going" | "backup" | "not_going" | "dropped";
 };
 
+type MatchAdminRow = {
+  match_date: string;
+  start_time: string | null;
+  status: "scheduled" | "open" | "closed" | "played" | "cancelled" | "suspended";
+};
+
 function getSignupCutoffDate(matchDate?: string, startTime?: string | null) {
   if (!matchDate) {
     return null;
@@ -79,7 +85,12 @@ async function syncMatchParticipants(matchId: string) {
     return { error: true, message: "No se pudo conectar con Supabase." };
   }
 
-  const [{ data: match, error: matchError }, { data: responses, error: responsesError }, previousRoster] =
+  const [
+    { data: match, error: matchError },
+    { data: responses, error: responsesError },
+    { data: existingParticipants, error: existingParticipantsError },
+    previousRoster,
+  ] =
     await Promise.all([
       supabase
         .from("matches")
@@ -91,10 +102,14 @@ async function syncMatchParticipants(matchId: string) {
         .select("response, responded_at, player_id, players(full_name)")
         .eq("match_id", matchId)
         .order("responded_at", { ascending: false }),
+      supabase
+        .from("match_participants")
+        .select("player_id, attendance_status, role, priority_note, priority_score, team_id")
+        .eq("match_id", matchId),
       getLatestPlayedRoster(matchId),
     ]);
 
-  if (matchError || !match || responsesError || !responses) {
+  if (matchError || !match || responsesError || !responses || existingParticipantsError) {
     return { error: true, message: "No se pudo leer la lista actual para cerrar la convocatoria." };
   }
 
@@ -125,9 +140,28 @@ async function syncMatchParticipants(matchId: string) {
     responses: typedResponses,
     targetPlayers: match.target_players,
   });
+  const preservedLateCancels = (existingParticipants ?? [])
+    .filter((participant) => participant.attendance_status === "late_cancel")
+    .map((participant) => ({
+      attendance_status: "late_cancel",
+      match_id: matchId,
+      player_id: participant.player_id,
+      priority_note: participant.priority_note,
+      priority_score: participant.priority_score,
+      role: participant.role,
+      team_id: participant.team_id,
+    }));
+  const preservedLateCancelIds = new Set(
+    preservedLateCancels.map((participant) => participant.player_id),
+  );
 
   const participantRows = projectedBoard.attendanceBoard
-    .filter((entry) => entry.playerId && entry.projectedRole !== "out")
+    .filter(
+      (entry) =>
+        entry.playerId &&
+        entry.projectedRole !== "out" &&
+        !preservedLateCancelIds.has(entry.playerId),
+    )
     .map((entry, index) => ({
       attendance_status: "confirmed",
       match_id: matchId,
@@ -149,7 +183,9 @@ async function syncMatchParticipants(matchId: string) {
     return { error: true, message: "No se pudo limpiar la lista previa del partido." };
   }
 
-  if (!participantRows.length) {
+  const rowsToInsert = [...participantRows, ...preservedLateCancels];
+
+  if (!rowsToInsert.length) {
     return {
       error: false,
       message: "La convocatoria se cerro, pero no habia jugadores confirmados para consolidar.",
@@ -158,7 +194,7 @@ async function syncMatchParticipants(matchId: string) {
 
   const { error: insertError } = await supabase
     .from("match_participants")
-    .insert(participantRows);
+    .insert(rowsToInsert);
 
   if (insertError) {
     return { error: true, message: "No se pudo consolidar la lista final del partido." };
@@ -168,6 +204,54 @@ async function syncMatchParticipants(matchId: string) {
     error: false,
     message: `Convocatoria cerrada con ${projectedBoard.projectedStarters} titulares y ${projectedBoard.projectedSubstitutes} suplentes.`,
   };
+}
+
+async function markLateCancelParticipant(matchId: string, playerId: string) {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { error: true, message: "No se pudo conectar con Supabase." };
+  }
+
+  const { data: existingParticipant, error: existingParticipantError } = await supabase
+    .from("match_participants")
+    .select("player_id, role, priority_note, priority_score, team_id")
+    .eq("match_id", matchId)
+    .eq("player_id", playerId)
+    .maybeSingle();
+
+  if (existingParticipantError) {
+    return { error: true, message: "No se pudo actualizar la baja tardia en la lista final." };
+  }
+
+  if (existingParticipant) {
+    const { error: updateError } = await supabase
+      .from("match_participants")
+      .update({ attendance_status: "late_cancel" })
+      .eq("match_id", matchId)
+      .eq("player_id", playerId);
+
+    if (updateError) {
+      return { error: true, message: "No se pudo marcar la baja tardia del jugador." };
+    }
+
+    return { error: false, message: "" };
+  }
+
+  const { error: insertError } = await supabase.from("match_participants").insert({
+    attendance_status: "late_cancel",
+    match_id: matchId,
+    player_id: playerId,
+    priority_note: "Baja tardia despues del cierre de lista.",
+    priority_score: -1,
+    role: "substitute",
+    team_id: null,
+  });
+
+  if (insertError) {
+    return { error: true, message: "No se pudo registrar la baja tardia del jugador." };
+  }
+
+  return { error: false, message: "" };
 }
 
 export async function updateMatchStatus(
@@ -276,7 +360,7 @@ export async function updateAttendanceResponseByAdmin(
     .from("matches")
     .select("match_date, start_time, status")
     .eq("id", matchId)
-    .maybeSingle();
+    .maybeSingle<MatchAdminRow>();
 
   if (matchError || !match) {
     return {
@@ -285,18 +369,43 @@ export async function updateAttendanceResponseByAdmin(
     };
   }
 
-  if (match.status !== "open") {
+  if (match.status === "suspended" || match.status === "cancelled" || match.status === "played") {
     return {
-      message: "Solo se puede editar la lista cuando la convocatoria esta abierta.",
+      message: "La lista ya no admite cambios para este partido.",
       status: "error",
     };
   }
 
   const signupCutoffDate = getSignupCutoffDate(match.match_date, match.start_time);
+  const submissionsOpen =
+    match.status === "open" &&
+    (signupCutoffDate ? Date.now() < signupCutoffDate.getTime() : true);
+  const lateDropRequested = response === "not_going";
 
-  if (signupCutoffDate && Date.now() >= signupCutoffDate.getTime()) {
+  const { data: existingResponse, error: existingResponseError } = await supabase
+    .from("availability_responses")
+    .select("response")
+    .eq("match_id", matchId)
+    .eq("player_id", playerId)
+    .maybeSingle<{ response: "going" | "backup" | "not_going" | "dropped" }>();
+
+  if (existingResponseError) {
     return {
-      message: "La convocatoria ya cerro por horario. La lista quedo congelada.",
+      message: "No se pudo leer la respuesta actual del jugador.",
+      status: "error",
+    };
+  }
+
+  const canLateDrop =
+    lateDropRequested &&
+    (existingResponse?.response === "going" || existingResponse?.response === "backup");
+
+  if (!submissionsOpen && !canLateDrop) {
+    return {
+      message:
+        match.status === "closed"
+          ? "Con la lista cerrada solo se permiten bajas tardias de jugadores ya anotados."
+          : "Despues del corte automatico solo se permiten bajas tardias de jugadores ya anotados.",
       status: "error",
     };
   }
@@ -306,7 +415,7 @@ export async function updateAttendanceResponseByAdmin(
       match_id: matchId,
       player_id: playerId,
       responded_at: new Date().toISOString(),
-      response,
+      response: submissionsOpen ? response : "dropped",
     },
     {
       onConflict: "match_id,player_id",
@@ -320,12 +429,34 @@ export async function updateAttendanceResponseByAdmin(
     };
   }
 
+  if (!submissionsOpen && match.status === "closed") {
+    const lateCancelResult = await markLateCancelParticipant(matchId, playerId);
+
+    if (lateCancelResult.error) {
+      return {
+        message: lateCancelResult.message,
+        status: "error",
+      };
+    }
+
+    const syncResult = await syncMatchParticipants(matchId);
+
+    if (syncResult.error) {
+      return {
+        message: syncResult.message,
+        status: "error",
+      };
+    }
+  }
+
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/confirmar");
 
   return {
-    message: "Respuesta actualizada desde admin.",
+    message: submissionsOpen
+      ? "Respuesta actualizada desde admin."
+      : "Baja tardia aplicada. La lista final ya corrio al siguiente suplente.",
     status: "success",
   };
 }

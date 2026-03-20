@@ -47,6 +47,7 @@ export function AvailabilityForm({
   attendanceSummary,
   availabilityOptions,
   currentMatch,
+  lateDropAllowed,
   matchId,
   matchNotes,
   matchStatus,
@@ -58,6 +59,7 @@ export function AvailabilityForm({
   attendanceSummary: AttendanceSummary;
   availabilityOptions: AvailabilityOption[];
   currentMatch: NextMatch;
+  lateDropAllowed: boolean;
   matchId: string;
   matchNotes?: string;
   matchStatus: string;
@@ -77,6 +79,8 @@ export function AvailabilityForm({
   const selectedOption = availabilityOptions.find(
     (option) => option.value === selectedResponse,
   );
+  const canEditResponse =
+    submissionsOpen || (lateDropAllowed && selectedResponse === "not_going");
   const statusTone =
     currentMatch.rawStatus === "open"
       ? "lime"
@@ -87,6 +91,8 @@ export function AvailabilityForm({
     ? currentMatch.signupClosesLabel
       ? `La convocatoria esta abierta. Se cierra automaticamente ${currentMatch.signupClosesLabel}, una hora y media antes del partido.`
       : "La convocatoria esta abierta y cualquier cambio impacta en la lista del martes."
+    : lateDropAllowed
+      ? "La lista ya quedo cerrada para nuevas altas, pero si surge una urgencia todavia podes darte de baja y el primer suplente disponible entra automaticamente."
     : currentMatch.rawStatus === "suspended"
       ? "La fecha esta suspendida. El admin puede dejar una nota, pero no se aceptan nuevas respuestas."
       : "La lista esta cerrada por horario o por decision del admin. Ya no se aceptan respuestas nuevas.";
@@ -106,7 +112,7 @@ export function AvailabilityForm({
               name="playerId"
               value={selectedPlayerId}
               onChange={(event) => setSelectedPlayerId(event.target.value)}
-              disabled={!submissionsOpen}
+              disabled={!submissionsOpen && !lateDropAllowed}
               className="rounded-[1.2rem] border border-line bg-surface-strong px-4 py-4 text-base font-semibold outline-none transition focus:border-foreground disabled:cursor-not-allowed disabled:opacity-70"
             >
               {players.map((player) => (
@@ -131,7 +137,7 @@ export function AvailabilityForm({
                 <button
                   key={option.value}
                   type="button"
-                  disabled={!submissionsOpen}
+                  disabled={!submissionsOpen && option.value !== "not_going"}
                   onClick={() => setSelectedResponse(option.value)}
                   className={`rounded-[1.5rem] border p-5 text-left transition disabled:cursor-not-allowed disabled:opacity-70 ${
                     isSelected
@@ -168,14 +174,20 @@ export function AvailabilityForm({
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-line bg-surface-strong p-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
-                Respuesta actual
+                {submissionsOpen ? "Respuesta actual" : "Cambio permitido"}
               </p>
               <p className="mt-2 text-lg font-extrabold">{selectedOption?.label}</p>
             </div>
-            <SubmitButton disabled={!submissionsOpen} mode={mode} />
+            <SubmitButton disabled={!canEditResponse} mode={mode} />
           </div>
 
-          {!submissionsOpen ? (
+          {!submissionsOpen && lateDropAllowed ? (
+            <div className="rounded-[1.2rem] border border-[#d96d2d]/30 bg-[#f7ddc9] px-4 py-3 text-sm leading-6 text-foreground">
+              La convocatoria ya cerro. Desde aca solo se permite marcar `No voy` para registrar una baja tardia.
+            </div>
+          ) : null}
+
+          {!submissionsOpen && !lateDropAllowed ? (
             <div className="rounded-[1.2rem] border border-accent/40 bg-[#f7ddc9] px-4 py-3 text-sm leading-6 text-foreground">
               {matchStatus === "Partido suspendido"
                 ? "La fecha esta suspendida. No se aceptan respuestas nuevas."
