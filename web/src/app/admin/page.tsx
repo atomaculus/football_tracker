@@ -114,7 +114,7 @@ export default async function AdminPage() {
         />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+      <section className="grid gap-6">
         <SectionCard eyebrow="Camisetas" title="Encargado de lavado">
           <div className="rounded-[1.5rem] border border-line bg-surface-strong p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -139,22 +139,6 @@ export default async function AdminPage() {
                 <p className="mt-2 text-lg font-black">{laundryDuty.dueLabel}</p>
               </div>
             </div>
-          </div>
-        </SectionCard>
-
-        <SectionCard eyebrow="Roadmap" title="Etapas pendientes" dark>
-          <div className="space-y-4 text-sm leading-6 text-white/78">
-            <p>
-              Etapa 5 en curso: cierre real del partido desde admin para alimentar prioridad,
-              historial y estadisticas sin depender del Excel.
-            </p>
-            <p>
-              Etapa 6: carga de equipos, resultado y goleadores.
-            </p>
-            <p>
-              Etapa 7: historial real, estadisticas acumuladas y logistica completa de
-              camisetas.
-            </p>
           </div>
         </SectionCard>
       </section>

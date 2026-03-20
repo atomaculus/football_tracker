@@ -13,10 +13,10 @@ export function SectionCard({
 }) {
   return (
     <article
-      className={`card-shadow rounded-[2rem] border p-6 ${
+      className={`card-shadow stadium-divider rounded-[2rem] border p-6 ${
         dark
-          ? "border-white/10 bg-surface-dark text-white"
-          : "border-line bg-surface text-foreground"
+          ? "dark-panel border-white/10 text-white"
+          : "glass-panel border-line text-foreground"
       }`}
     >
       <p

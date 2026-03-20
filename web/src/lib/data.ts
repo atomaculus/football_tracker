@@ -721,7 +721,7 @@ async function getRealLeaderboard() {
         .eq("status", "played"),
       supabase
         .from("match_participants")
-        .select("match_id, player_id, attendance_status, team_id, players(full_name)")
+        .select("match_id, player_id, attendance_status, priority_note, team_id, players(full_name)")
         .eq("attendance_status", "played"),
       supabase.from("teams").select("id, match_id, goals"),
       supabase
@@ -739,6 +739,7 @@ async function getRealLeaderboard() {
     match_id: string;
     player_id: string;
     players: { full_name?: string } | { full_name?: string }[] | null;
+    priority_note: string | null;
     team_id: string | null;
   }>).filter((participant) => playedMatchIds.has(participant.match_id));
   const typedTeams = (teams ?? []) as Array<{ goals: number; id: string; match_id: string }>;
@@ -797,6 +798,19 @@ async function getRealLeaderboard() {
         if (goalDiff > 0) {
           stat.wins += 1;
         } else if (goalDiff < 0) {
+          stat.losses += 1;
+        } else {
+          stat.draws += 1;
+        }
+      } else if (participant.priority_note) {
+        const matchValue = participant.priority_note.match(/valor\s(-?\d+)/i);
+        const importedDiff = matchValue ? Number.parseInt(matchValue[1] ?? "0", 10) : 0;
+
+        stat.diff += importedDiff;
+
+        if (importedDiff > 0) {
+          stat.wins += 1;
+        } else if (importedDiff < 0) {
           stat.losses += 1;
         } else {
           stat.draws += 1;

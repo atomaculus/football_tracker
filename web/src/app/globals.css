@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #eef3e6;
-  --foreground: #102616;
-  --surface: rgba(248, 251, 243, 0.82);
-  --surface-strong: #f9fcf4;
-  --surface-dark: #163823;
-  --line: rgba(16, 38, 22, 0.12);
-  --muted: #526353;
-  --accent: #d96d2d;
-  --accent-strong: #aa4e1b;
-  --lime: #b9da55;
-  --sand: #d7c49b;
-  --pitch: #2d6a3d;
-  --pitch-strong: #1f4c2c;
-  --chalk: #f3f5eb;
+  --background: #eef4ea;
+  --foreground: #0a1f15;
+  --surface: rgba(247, 250, 244, 0.76);
+  --surface-strong: rgba(251, 253, 248, 0.92);
+  --surface-dark: #0d2418;
+  --line: rgba(10, 31, 21, 0.12);
+  --muted: #526956;
+  --accent: #f36b21;
+  --accent-strong: #bd4f16;
+  --lime: #cde55a;
+  --sand: #dcc79d;
+  --pitch: #2e8a4f;
+  --pitch-strong: #184c31;
+  --chalk: #f4f7ef;
 }
 
 @theme inline {
@@ -45,10 +45,16 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(185, 218, 85, 0.36), transparent 24%),
-    radial-gradient(circle at 88% 14%, rgba(217, 109, 45, 0.2), transparent 18%),
-    linear-gradient(135deg, rgba(45, 106, 61, 0.08), transparent 24%),
-    linear-gradient(180deg, #eff5e8 0%, #eef3e6 42%, #e4ecdb 100%);
+    linear-gradient(180deg, rgba(6, 20, 14, 0.24), rgba(6, 20, 14, 0.04) 28%, rgba(238, 244, 234, 0) 56%),
+    url("/stadium-backdrop.svg"),
+    radial-gradient(circle at top left, rgba(205, 229, 90, 0.32), transparent 24%),
+    radial-gradient(circle at 88% 14%, rgba(243, 107, 33, 0.22), transparent 20%),
+    linear-gradient(140deg, rgba(46, 138, 79, 0.1), transparent 26%),
+    linear-gradient(180deg, #edf5ea 0%, #ebf2e6 38%, #dce8dd 100%);
+  background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+  background-position: center top, center top, left top, right top, center top, center top;
+  background-repeat: no-repeat;
+  background-size: cover, cover, auto, auto, auto, auto;
   min-height: 100vh;
 }
 
@@ -79,11 +85,69 @@ a {
 
 .card-shadow {
   box-shadow:
-    0 18px 38px rgba(20, 44, 28, 0.09),
-    inset 0 1px 0 rgba(255, 255, 255, 0.68);
+    0 24px 60px rgba(9, 28, 18, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74);
 }
 
 .display {
   font-family: var(--font-display), sans-serif;
   letter-spacing: 0.03em;
+}
+
+.hero-shell {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(130deg, rgba(255, 255, 255, 0.34), transparent 44%),
+    radial-gradient(circle at 18% 18%, rgba(205, 229, 90, 0.28), transparent 28%),
+    radial-gradient(circle at 84% 14%, rgba(243, 107, 33, 0.24), transparent 24%);
+  pointer-events: none;
+}
+
+.hero-shell::after {
+  content: "";
+  position: absolute;
+  inset: auto -12% -44% auto;
+  width: 36rem;
+  height: 36rem;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(46, 138, 79, 0.24), transparent 68%);
+  pointer-events: none;
+}
+
+.fixture-kicker {
+  background:
+    linear-gradient(90deg, rgba(205, 229, 90, 0.9), rgba(243, 107, 33, 0.9));
+  color: #0a1f15;
+}
+
+.glass-panel {
+  backdrop-filter: blur(18px);
+  background: rgba(249, 252, 246, 0.68);
+}
+
+.dark-panel {
+  background:
+    linear-gradient(180deg, rgba(19, 50, 33, 0.92), rgba(12, 30, 20, 0.96));
+}
+
+.stadium-divider {
+  position: relative;
+}
+
+.stadium-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  opacity: 0.55;
 }

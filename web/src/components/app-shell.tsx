@@ -28,11 +28,11 @@ export function AppShell({
   return (
     <main className="grain min-h-screen px-4 py-5 sm:px-6 lg:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <header className="card-shadow overflow-hidden rounded-[2rem] border border-line bg-surface">
+        <header className="hero-shell card-shadow overflow-hidden rounded-[2.4rem] border border-white/20 bg-[linear-gradient(180deg,rgba(250,253,248,0.86),rgba(236,243,235,0.8))]">
           <div className="grid gap-6 p-6 lg:grid-cols-[1.15fr_0.85fr] lg:p-8">
-            <div>
+            <div className="relative z-10">
               <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-muted">
-                <span className="rounded-full bg-lime px-3 py-1 text-foreground">
+                <span className="fixture-kicker rounded-full px-3 py-1">
                   Football Tracker
                 </span>
                 <span>2 admins</span>
@@ -45,15 +45,28 @@ export function AppShell({
                   </span>
                 ) : null}
               </div>
-              <h1 className="mt-5 text-4xl font-black sm:text-5xl">{title}</h1>
-              <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
+              <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[0.92] sm:text-6xl">
+                {title}
+              </h1>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
                 {subtitle}
               </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                {filteredNavItems.slice(0, 4).map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-full border border-line bg-white/70 px-4 py-2 text-sm font-semibold text-foreground transition hover:border-foreground"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
 
-            <div className="grid gap-4">
-              <div className="rounded-[1.6rem] border border-[#2d6a3d]/14 bg-[linear-gradient(180deg,rgba(249,252,244,0.98),rgba(235,242,229,0.96))] p-5">
-                <div className="flex items-center justify-between gap-4">
+            <div className="relative z-10 grid gap-4">
+              <div className="glass-panel rounded-[1.8rem] border border-white/40 p-5">
+                <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
                       Proximo partido
@@ -61,25 +74,28 @@ export function AppShell({
                     <h2 className="mt-2 text-2xl font-extrabold">
                       {nextMatch.dateLabel}
                     </h2>
+                    <p className="mt-2 text-sm text-muted">
+                      {nextMatch.timeLabel} · {nextMatch.venue}
+                    </p>
                   </div>
                   <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-white">
                     {nextMatch.status}
                   </span>
                 </div>
                 <div className="mt-5 grid grid-cols-3 gap-3">
-                  <div className="rounded-2xl border border-[#2d6a3d]/10 bg-[#edf3e4] p-3">
+                  <div className="rounded-2xl border border-white/60 bg-[#f4f8ed] p-3">
                     <p className="text-xs uppercase tracking-[0.18em] text-muted">
                       Confirmados
                     </p>
                     <p className="mt-1 text-3xl font-black">{nextMatch.confirmed}</p>
                   </div>
-                  <div className="rounded-2xl border border-[#d96d2d]/12 bg-[#f4ddcf] p-3">
+                  <div className="rounded-2xl border border-white/60 bg-[#f8e3d6] p-3">
                     <p className="text-xs uppercase tracking-[0.18em] text-muted">
                       Suplentes
                     </p>
                     <p className="mt-1 text-3xl font-black">{nextMatch.substitutes}</p>
                   </div>
-                  <div className="rounded-2xl border border-[#2d6a3d]/12 bg-[#dbe8d8] p-3">
+                  <div className="rounded-2xl border border-white/60 bg-[#e1eddc] p-3">
                     <p className="text-xs uppercase tracking-[0.18em] text-muted">
                       Faltan
                     </p>
@@ -110,7 +126,7 @@ export function AppShell({
           </div>
         </header>
 
-        <nav className="card-shadow sticky top-4 z-10 overflow-x-auto rounded-[1.6rem] border border-line bg-surface/95 px-3 py-3 backdrop-blur">
+        <nav className="card-shadow sticky top-4 z-10 overflow-x-auto rounded-[1.6rem] border border-white/30 bg-[rgba(250,252,247,0.72)] px-3 py-3 backdrop-blur">
           <div className="flex min-w-max gap-2">
             {filteredNavItems.map((item) => (
               <Link

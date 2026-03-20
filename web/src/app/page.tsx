@@ -14,75 +14,75 @@ export default async function Home() {
   return (
     <AppShell
       title="Inicio del martes"
-      subtitle="Vista principal para entrar rapido a confirmar asistencia, revisar si el partido ya esta armado y consultar el pulso de la semana."
+      subtitle="Un tablero mas de cita grande que de planilla. Confirmar, ver el pulso del grupo y entrar en clima para el proximo partido."
       navItems={navItems}
       nextMatch={nextMatch}
       viewer={viewer}
     >
-      <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <SectionCard eyebrow="Accion rapida" title="Tu estado para esta fecha">
+      <section className="grid gap-6">
+        <SectionCard eyebrow="Noche de partido" title="El fixture del martes merece otra energia">
           <div className="grid gap-4">
-            <div className="rounded-[1.6rem] border border-line bg-surface-strong p-5">
-              <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr] xl:items-stretch">
+            <div className="rounded-[1.9rem] border border-white/22 bg-[linear-gradient(135deg,rgba(10,31,21,0.96),rgba(22,62,41,0.88))] p-6 text-white">
+              <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr] xl:items-stretch">
                 <div className="flex h-full flex-col">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
+                      <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/55">
                         Proximo partido
                       </p>
-                      <p className="mt-2 text-2xl font-black">
+                      <p className="mt-2 text-3xl font-black sm:text-4xl">
                         {nextMatch.dateLabel} {" · "} {nextMatch.timeLabel}
                       </p>
-                      <p className="mt-1 text-sm text-muted">{nextMatch.venue}</p>
+                      <p className="mt-2 text-sm text-white/68">{nextMatch.venue}</p>
                       {nextMatch.signupClosesLabel ? (
-                        <p className="mt-2 text-sm text-muted">
-                          La convocatoria cierra automaticamente {nextMatch.signupClosesLabel}.
+                        <p className="mt-4 max-w-xl text-sm leading-6 text-white/74">
+                          La convocatoria cierra automaticamente {nextMatch.signupClosesLabel}. El
+                          objetivo es llegar con lista, suplentes y ambiente de partido grande.
                         </p>
                       ) : null}
                     </div>
                     <Pill tone="accent">{nextMatch.status}</Pill>
                   </div>
-                  <div className="mt-5 flex flex-wrap gap-3">
+
+                  <div className="mt-6 flex flex-wrap gap-3">
                     <Link
                       href="/confirmar"
-                      className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-white transition hover:bg-surface-dark"
+                      className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-[#e8efdf]"
                     >
                       Confirmar asistencia
                     </Link>
                     <Link
                       href="/partido"
-                      className="rounded-full border border-line bg-background/40 px-5 py-3 text-sm font-semibold transition hover:border-foreground"
+                      className="rounded-full border border-white/24 bg-white/8 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/48"
                     >
                       Ver partido
                     </Link>
                   </div>
+
+                  <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-[1.35rem] border border-white/12 bg-white/8 p-4">
+                      <p className="text-xs uppercase tracking-[0.18em] text-white/52">Formato</p>
+                      <p className="mt-2 text-3xl font-black">{nextMatch.format}</p>
+                    </div>
+                    <div className="rounded-[1.35rem] border border-white/12 bg-white/8 p-4">
+                      <p className="text-xs uppercase tracking-[0.18em] text-white/52">Objetivo</p>
+                      <p className="mt-2 text-3xl font-black">{nextMatch.targetPlayers}</p>
+                    </div>
+                    <div className="rounded-[1.35rem] border border-white/12 bg-white/8 p-4">
+                      <p className="text-xs uppercase tracking-[0.18em] text-white/52">Fallback</p>
+                      <p className="mt-2 text-3xl font-black">{nextMatch.fallbackPlayers}</p>
+                    </div>
+                  </div>
                 </div>
 
-                <MatchCountdown
-                  isoDate={nextMatch.isoDate}
-                  isoTime={nextMatch.isoTime}
-                  compact
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[1.5rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-muted">Formato</p>
-                <p className="mt-2 text-3xl font-black">{nextMatch.format}</p>
-              </div>
-              <div className="rounded-[1.5rem] border border-[#2d6a3d]/10 bg-[#dbe8d8] p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-muted">Objetivo</p>
-                <p className="mt-2 text-3xl font-black">{nextMatch.targetPlayers}</p>
-              </div>
-              <div className="rounded-[1.5rem] border border-[#d96d2d]/12 bg-[#f4ddcf] p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-muted">Fallback</p>
-                <p className="mt-2 text-3xl font-black">{nextMatch.fallbackPlayers}</p>
+                <MatchCountdown isoDate={nextMatch.isoDate} isoTime={nextMatch.isoTime} compact />
               </div>
             </div>
           </div>
         </SectionCard>
+      </section>
 
+      <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <SectionCard eyebrow="Lista en vivo" title="Ultimas respuestas" dark>
           <div className="space-y-3">
             {attendanceBoard.map((player) => (
@@ -99,10 +99,8 @@ export default async function Home() {
             ))}
           </div>
         </SectionCard>
-      </section>
 
-      <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-        <SectionCard eyebrow="Atajos" title="Navegacion del MVP">
+        <SectionCard eyebrow="Accesos" title="Entradas rapidas">
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               { href: "/confirmar", label: "Confirmar asistencia" },
@@ -114,40 +112,42 @@ export default async function Home() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-[1.4rem] border border-line bg-surface-strong p-5 text-sm font-extrabold uppercase tracking-[0.08em] transition hover:border-foreground"
+                className="rounded-[1.5rem] border border-line bg-surface-strong p-5 text-sm font-extrabold uppercase tracking-[0.08em] transition hover:-translate-y-0.5 hover:border-foreground"
               >
                 {item.label}
               </Link>
             ))}
           </div>
         </SectionCard>
+      </section>
 
+      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <SectionCard eyebrow="Estadisticas" title="Pulso del grupo">
           <div className="overflow-hidden rounded-[1.4rem] border border-line">
-            <div className="grid grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr] bg-surface-strong px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted">
+            <div className="grid grid-cols-[1.45fr_0.7fr_0.7fr_0.9fr_0.8fr] bg-surface-strong px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted">
               <span>Jugador</span>
-              <span>Pres.</span>
+              <span>Jug.</span>
               <span>Goles</span>
+              <span>Exito</span>
               <span>Dif.</span>
             </div>
             {leaderboard.map((player, index) => (
               <div
                 key={player.name}
-                className="grid grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr] items-center border-t border-line px-4 py-4 text-sm"
+                className="grid grid-cols-[1.45fr_0.7fr_0.7fr_0.9fr_0.8fr] items-center border-t border-line px-4 py-4 text-sm"
               >
                 <span className="font-bold">
                   {index + 1}. {player.name}
                 </span>
                 <span>{player.presences}</span>
                 <span>{player.goals}</span>
+                <span>{player.successRate ?? "0%"}</span>
                 <span className="text-accent-strong">{player.diff}</span>
               </div>
             ))}
           </div>
         </SectionCard>
-      </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <SectionCard eyebrow="Logistica" title="Encargado de camisetas">
           <div className="rounded-[1.5rem] border border-line bg-surface-strong p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -172,20 +172,6 @@ export default async function Home() {
                 <p className="mt-2 text-lg font-black">{laundryDuty.dueLabel}</p>
               </div>
             </div>
-          </div>
-        </SectionCard>
-
-        <SectionCard eyebrow="Regla sugerida" title="Como conviene resolverlo" dark>
-          <div className="space-y-4 text-sm leading-6 text-white/78">
-            <p>
-              Para ustedes conviene arrancar por turnos, no al azar. Asi todos cargan con
-              las camisetas de forma pareja y se evita repetir a uno que ya las llevo hace
-              poco.
-            </p>
-            <p>
-              La version admin puede igual ofrecer un override manual para reasignar si el
-              encargado de esa semana falta o se baja a ultimo momento.
-            </p>
           </div>
         </SectionCard>
       </section>

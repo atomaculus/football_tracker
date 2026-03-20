@@ -1,0 +1,26 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#081811"/>
+  <ellipse cx="800" cy="142" rx="540" ry="190" fill="url(#lights)" fill-opacity="0.9"/>
+  <ellipse cx="800" cy="770" rx="760" ry="210" fill="url(#pitch)" fill-opacity="0.95"/>
+  <path d="M90 670C320 520 530 455 800 455C1070 455 1280 520 1510 670" stroke="rgba(255,255,255,0.16)" stroke-width="2"/>
+  <path d="M210 736C405 612 577 560 800 560C1023 560 1195 612 1390 736" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+  <path d="M520 610H1080" stroke="#F6F8EE" stroke-opacity="0.32" stroke-width="4" stroke-linecap="round"/>
+  <path d="M800 520V800" stroke="#F6F8EE" stroke-opacity="0.22" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="800" cy="675" r="84" stroke="#F6F8EE" stroke-opacity="0.2" stroke-width="3"/>
+  <rect x="0" y="0" width="1600" height="900" fill="url(#fade)"/>
+  <defs>
+    <radialGradient id="lights" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(800 142) rotate(90) scale(190 540)">
+      <stop stop-color="#F4E7B8"/>
+      <stop offset="1" stop-color="#F4E7B8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pitch" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(800 770) rotate(90) scale(210 760)">
+      <stop stop-color="#174D34"/>
+      <stop offset="1" stop-color="#0D2418"/>
+    </radialGradient>
+    <linearGradient id="fade" x1="800" y1="0" x2="800" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#07140F" stop-opacity="0.06"/>
+      <stop offset="0.32" stop-color="#07140F" stop-opacity="0"/>
+      <stop offset="1" stop-color="#07140F" stop-opacity="0.58"/>
+    </linearGradient>
+  </defs>
+</svg>
