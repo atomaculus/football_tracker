@@ -37,6 +37,20 @@ type MatchRow = {
   target_players: number;
 };
 
+type AttendanceQueryRow = {
+  player_id: string;
+  players: { full_name?: string } | { full_name?: string }[] | null;
+  responded_at: string | null;
+  response: "going" | "backup" | "not_going" | "dropped";
+};
+
+type PreviousPlayerRow = {
+  player_id: string;
+  players: { full_name?: string } | { full_name?: string }[] | null;
+  priority_note: string | null;
+  role: "starter" | "substitute" | "guest";
+};
+
 function formatMatchDate(date: string) {
   const parsedDate = new Date(`${date}T12:00:00`);
 
@@ -197,6 +211,103 @@ function getAdminInsights(nextMatch: NextMatch, attendanceSummary: AttendanceSum
   return [formatInsight, quorumInsight, adminActionInsight];
 }
 
+function getPlayerName(
+  playerData: { full_name?: string } | { full_name?: string }[] | null,
+) {
+  const normalized = Array.isArray(playerData) ? playerData[0] : playerData;
+
+  return normalized && typeof normalized === "object" && "full_name" in normalized
+    ? String(normalized.full_name)
+    : "Jugador";
+}
+
+function buildProjectedAttendanceBoard({
+  previousPlayers,
+  responses,
+  targetPlayers,
+}: {
+  previousPlayers: PreviousPlayerRow[];
+  responses: AttendanceEntry[];
+  targetPlayers: number;
+}) {
+  const responseByPlayerId = new Map<string, AttendanceEntry>();
+  const responseOrder = [...responses].reverse();
+
+  for (const response of responseOrder) {
+    if (response.playerId) {
+      responseByPlayerId.set(response.playerId, response);
+    }
+  }
+
+  const previousPriorityEntries = previousPlayers
+    .map((player) => {
+      const currentResponse = responseByPlayerId.get(player.player_id);
+
+      if (currentResponse?.responseValue === "not_going" || currentResponse?.responseValue === "dropped") {
+        return null;
+      }
+
+      return {
+        detail:
+          currentResponse?.detail ??
+          (player.priority_note
+            ? `Prioridad del ultimo martes. ${player.priority_note}`
+            : "Prioridad del ultimo martes."),
+        isPriority: true,
+        name: currentResponse?.name ?? getPlayerName(player.players),
+        playerId: player.player_id,
+        projectedRole: "starter" as const,
+        responseValue: currentResponse?.responseValue ?? "going",
+        status: "Titular",
+      };
+    })
+    .filter((entry) => entry !== null);
+
+  const previousPriorityIds = new Set(previousPriorityEntries.map((entry) => entry.playerId));
+  const notGoingEntries = responses
+    .filter((entry) => entry.responseValue === "not_going" || entry.responseValue === "dropped")
+    .map((entry) => ({
+      ...entry,
+      projectedRole: "out" as const,
+      status: "No va",
+    }));
+
+  const directGoingEntries = responseOrder.filter(
+    (entry) =>
+      entry.responseValue === "going" &&
+      entry.playerId &&
+      !previousPriorityIds.has(entry.playerId),
+  );
+  const backupEntries = responseOrder.filter((entry) => entry.responseValue === "backup");
+
+  const remainingStarterSlots = Math.max(targetPlayers - previousPriorityEntries.length, 0);
+  const additionalStarters = directGoingEntries.slice(0, remainingStarterSlots).map((entry) => ({
+    ...entry,
+    projectedRole: "starter" as const,
+    status: "Titular",
+  }));
+
+  const overflowGoing = directGoingEntries.slice(remainingStarterSlots).map((entry) => ({
+    ...entry,
+    projectedRole: "substitute" as const,
+    status: "Suplente",
+  }));
+  const projectedBackups = backupEntries.map((entry) => ({
+    ...entry,
+    projectedRole: "substitute" as const,
+    status: "Suplente",
+  }));
+
+  const starters = [...previousPriorityEntries, ...additionalStarters];
+  const substitutes = [...overflowGoing, ...projectedBackups];
+
+  return {
+    attendanceBoard: [...starters, ...substitutes, ...notGoingEntries],
+    projectedStarters: starters.length,
+    projectedSubstitutes: substitutes.length,
+  };
+}
+
 function buildNextMatch(
   match: MatchRow | null,
   counts?: { backup: number; going: number; notGoing: number },
@@ -284,6 +395,47 @@ async function getUpcomingMatchFromSupabase() {
   return data as MatchRow;
 }
 
+async function getLatestPlayedRoster(currentMatchId?: string) {
+  if (!hasSupabaseEnv()) {
+    return null;
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return null;
+  }
+
+  let matchQuery = supabase
+    .from("matches")
+    .select("id")
+    .eq("status", "played")
+    .order("match_date", { ascending: false })
+    .limit(1);
+
+  if (currentMatchId) {
+    matchQuery = matchQuery.neq("id", currentMatchId);
+  }
+
+  const { data: latestMatch, error: latestMatchError } = await matchQuery.maybeSingle();
+
+  if (latestMatchError || !latestMatch) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("match_participants")
+    .select("player_id, role, priority_note, players(full_name)")
+    .eq("match_id", latestMatch.id)
+    .eq("attendance_status", "played")
+    .order("role", { ascending: true });
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data as PreviousPlayerRow[];
+}
+
 async function getAttendanceForMatch(matchId: string) {
   if (!hasSupabaseEnv()) {
     return null;
@@ -304,7 +456,9 @@ async function getAttendanceForMatch(matchId: string) {
     return null;
   }
 
-  const counts = data.reduce(
+  const typedData = data as AttendanceQueryRow[];
+
+  const counts = typedData.reduce(
     (accumulator, item) => {
       if (item.response === "going") {
         accumulator.going += 1;
@@ -319,16 +473,10 @@ async function getAttendanceForMatch(matchId: string) {
     { backup: 0, going: 0, notGoing: 0 },
   );
 
-  const attendanceEntries: AttendanceEntry[] = data.map((item) => {
-      const playerData = Array.isArray(item.players) ? item.players[0] : item.players;
-      const fullName =
-        playerData && typeof playerData === "object" && "full_name" in playerData
-          ? String(playerData.full_name)
-          : "Jugador";
-
+  const attendanceEntries: AttendanceEntry[] = typedData.map((item) => {
       return {
         detail: `Respondio ${formatResponseDetail(item.responded_at)}`,
-        name: fullName,
+        name: getPlayerName(item.players),
         playerId: item.player_id,
         status: mapAvailabilityResponse(item.response),
         responseValue: item.response as AttendanceEntry["responseValue"],
@@ -423,6 +571,7 @@ export async function getAdminPageData(): Promise<AdminPageData> {
   const attendanceData = upcomingMatch
     ? await getAttendanceForMatch(upcomingMatch.id)
     : null;
+  const previousRoster = upcomingMatch ? await getLatestPlayedRoster(upcomingMatch.id) : null;
   const currentMatch = buildNextMatch(upcomingMatch, attendanceData?.counts);
   const attendanceSummary: AttendanceSummary = attendanceData?.attendanceSummary ?? {
     backups: currentMatch.substitutes,
@@ -430,14 +579,19 @@ export async function getAdminPageData(): Promise<AdminPageData> {
     declined: 0,
     totalResponses: attendanceBoardSeed.length,
   };
+  const projectedBoard = buildProjectedAttendanceBoard({
+    previousPlayers: previousRoster ?? [],
+    responses: attendanceData?.fullAttendanceBoard ?? attendanceBoardSeed,
+    targetPlayers: currentMatch.targetPlayers,
+  });
 
   return {
     adminInsights: getAdminInsights(currentMatch, attendanceSummary),
-    attendanceBoard: attendanceData?.fullAttendanceBoard.length
-      ? attendanceData.fullAttendanceBoard
-      : attendanceBoardSeed,
+    attendanceBoard: projectedBoard.attendanceBoard,
     attendanceSummary,
     currentMatch,
     laundryDuty: laundryDutySeed,
+    projectedStarters: projectedBoard.projectedStarters,
+    projectedSubstitutes: projectedBoard.projectedSubstitutes,
   };
 }

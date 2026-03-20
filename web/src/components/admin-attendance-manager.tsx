@@ -51,7 +51,10 @@ function AttendanceRow({
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-extrabold">{entry.name}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-extrabold">{entry.name}</p>
+            {entry.isPriority ? <Pill tone="lime">Prioridad</Pill> : null}
+          </div>
           <p className="text-sm text-white/60">{entry.detail}</p>
         </div>
         <Pill>{entry.status}</Pill>
@@ -98,16 +101,20 @@ export function AdminAttendanceManager({
   attendanceBoard,
   attendanceSummary,
   currentMatchId,
+  projectedStarters,
+  projectedSubstitutes,
 }: {
   attendanceBoard: AttendanceEntry[];
   attendanceSummary: { backups: number; confirmed: number; declined: number };
   currentMatchId?: string;
+  projectedStarters: number;
+  projectedSubstitutes: number;
 }) {
   return (
     <SectionCard eyebrow="Lista operativa" title="Jugadores de esta fecha" dark>
       <div className="mb-5 flex flex-wrap gap-2">
-        <Pill tone="lime">{attendanceSummary.confirmed} titulares</Pill>
-        <Pill tone="accent">{attendanceSummary.backups} suplentes</Pill>
+        <Pill tone="lime">{projectedStarters} titulares proyectados</Pill>
+        <Pill tone="accent">{projectedSubstitutes} suplentes proyectados</Pill>
         <Pill>{attendanceSummary.declined} bajas</Pill>
       </div>
 

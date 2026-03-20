@@ -26,6 +26,8 @@ export type AttendanceEntry = {
   name: string;
   status: string;
   detail: string;
+  isPriority?: boolean;
+  projectedRole?: "starter" | "substitute" | "out";
   responseValue?: "going" | "backup" | "not_going" | "dropped";
 };
 
@@ -135,4 +137,6 @@ export type AdminPageData = {
   adminInsights: AdminInsight[];
   currentMatch: NextMatch;
   laundryDuty: LaundryDuty;
+  projectedStarters: number;
+  projectedSubstitutes: number;
 };

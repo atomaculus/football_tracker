@@ -6,8 +6,15 @@ import { getAdminPageData, getDashboardData } from "@/lib/data";
 
 export default async function AdminPage() {
   const { navItems, nextMatch } = await getDashboardData();
-  const { adminInsights, attendanceBoard, attendanceSummary, currentMatch, laundryDuty } =
-    await getAdminPageData();
+  const {
+    adminInsights,
+    attendanceBoard,
+    attendanceSummary,
+    currentMatch,
+    laundryDuty,
+    projectedStarters,
+    projectedSubstitutes,
+  } = await getAdminPageData();
 
   return (
     <AppShell
@@ -38,6 +45,18 @@ export default async function AdminPage() {
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Respuestas</p>
                 <p className="mt-2 text-3xl font-black">{attendanceSummary.totalResponses}</p>
               </div>
+              <div className="rounded-[1.4rem] border border-[#2d6a3d]/10 bg-[#dbe8d8] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                  Titulares proyectados
+                </p>
+                <p className="mt-2 text-3xl font-black">{projectedStarters}</p>
+              </div>
+              <div className="rounded-[1.4rem] border border-line bg-surface-strong p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                  Suplentes proyectados
+                </p>
+                <p className="mt-2 text-3xl font-black">{projectedSubstitutes}</p>
+              </div>
             </div>
 
             {adminInsights.map((insight) => (
@@ -63,6 +82,8 @@ export default async function AdminPage() {
           attendanceBoard={attendanceBoard}
           attendanceSummary={attendanceSummary}
           currentMatchId={currentMatch.id}
+          projectedStarters={projectedStarters}
+          projectedSubstitutes={projectedSubstitutes}
         />
       </section>
 
