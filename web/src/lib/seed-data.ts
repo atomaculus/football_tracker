@@ -28,12 +28,48 @@ export const nextMatchSeed: NextMatch = {
 };
 
 export const attendanceBoardSeed: AttendanceEntry[] = [
-  { name: "Lucas Lopez", status: "Titular", detail: "Confirmo lunes 08:07" },
-  { name: "Mariano Salama", status: "Titular", detail: "Confirmo lunes 08:11" },
-  { name: "Ruben Mel", status: "Titular", detail: "Confirmo lunes 08:14" },
-  { name: "Fidel", status: "Titular", detail: "Confirmo lunes 08:31" },
-  { name: "Pacho", status: "Suplente", detail: "Primero en espera" },
-  { name: "Nico Arquero", status: "No va", detail: "Baja avisada 16:40" },
+  {
+    playerId: "seed-lucas-lopez",
+    name: "Lucas Lopez",
+    status: "Titular",
+    detail: "Confirmo lunes 08:07",
+    responseValue: "going",
+  },
+  {
+    playerId: "seed-mariano-salama",
+    name: "Mariano Salama",
+    status: "Titular",
+    detail: "Confirmo lunes 08:11",
+    responseValue: "going",
+  },
+  {
+    playerId: "seed-ruben-mel",
+    name: "Ruben Mel",
+    status: "Titular",
+    detail: "Confirmo lunes 08:14",
+    responseValue: "going",
+  },
+  {
+    playerId: "seed-fidel",
+    name: "Fidel",
+    status: "Titular",
+    detail: "Confirmo lunes 08:31",
+    responseValue: "going",
+  },
+  {
+    playerId: "seed-pacho",
+    name: "Pacho",
+    status: "Suplente",
+    detail: "Primero en espera",
+    responseValue: "backup",
+  },
+  {
+    playerId: "seed-nico-arquero",
+    name: "Nico Arquero",
+    status: "No va",
+    detail: "Baja avisada 16:40",
+    responseValue: "not_going",
+  },
 ];
 
 export const laundryDutySeed: LaundryDuty = {

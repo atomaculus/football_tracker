@@ -9,6 +9,11 @@ export type MatchAdminActionState = {
   status: "idle" | "success" | "error" | "demo";
 };
 
+export type AttendanceAdminActionState = {
+  message: string;
+  status: "idle" | "success" | "error" | "demo";
+};
+
 export async function updateMatchStatus(
   _previousState: MatchAdminActionState,
   formData: FormData,
@@ -57,6 +62,65 @@ export async function updateMatchStatus(
 
   return {
     message: "Estado del partido actualizado.",
+    status: "success",
+  };
+}
+
+export async function updateAttendanceResponseByAdmin(
+  _previousState: AttendanceAdminActionState,
+  formData: FormData,
+): Promise<AttendanceAdminActionState> {
+  const matchId = String(formData.get("matchId") ?? "");
+  const playerId = String(formData.get("playerId") ?? "");
+  const response = String(formData.get("response") ?? "");
+
+  if (!matchId || !playerId || !response) {
+    return {
+      message: "Falta el jugador, el partido o la respuesta a actualizar.",
+      status: "error",
+    };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return {
+      message: "La edicion admin queda activa cuando la app usa Supabase real.",
+      status: "demo",
+    };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return {
+      message: "No se pudo conectar con Supabase.",
+      status: "error",
+    };
+  }
+
+  const { error } = await supabase.from("availability_responses").upsert(
+    {
+      match_id: matchId,
+      player_id: playerId,
+      responded_at: new Date().toISOString(),
+      response,
+    },
+    {
+      onConflict: "match_id,player_id",
+    },
+  );
+
+  if (error) {
+    return {
+      message: "No se pudo actualizar la respuesta del jugador.",
+      status: "error",
+    };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/confirmar");
+
+  return {
+    message: "Respuesta actualizada desde admin.",
     status: "success",
   };
 }

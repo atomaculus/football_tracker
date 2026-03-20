@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminAttendanceManager } from "@/components/admin-attendance-manager";
 import { AdminMatchControls } from "@/components/admin-match-controls";
 import { Pill, SectionCard } from "@/components/ui";
 import { getAdminPageData, getDashboardData } from "@/lib/data";
@@ -58,29 +59,11 @@ export default async function AdminPage() {
           </div>
         </SectionCard>
 
-        <SectionCard eyebrow="Lista operativa" title="Jugadores de esta fecha" dark>
-          <div className="mb-5 flex flex-wrap gap-2">
-            <Pill tone="lime">{attendanceSummary.confirmed} titulares</Pill>
-            <Pill tone="accent">{attendanceSummary.backups} suplentes</Pill>
-            <Pill>{attendanceSummary.declined} bajas</Pill>
-          </div>
-          <div className="space-y-3">
-            {attendanceBoard.map((player) => (
-              <div
-                key={`${player.name}-${player.detail}`}
-                className="rounded-[1.4rem] border border-white/10 bg-white/6 px-4 py-4"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="font-extrabold">{player.name}</p>
-                    <p className="text-sm text-white/60">{player.detail}</p>
-                  </div>
-                  <Pill>{player.status}</Pill>
-                </div>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
+        <AdminAttendanceManager
+          attendanceBoard={attendanceBoard}
+          attendanceSummary={attendanceSummary}
+          currentMatchId={currentMatch.id}
+        />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">

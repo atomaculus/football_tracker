@@ -296,7 +296,7 @@ async function getAttendanceForMatch(matchId: string) {
 
   const { data, error } = await supabase
     .from("availability_responses")
-    .select("response, responded_at, players(full_name)")
+    .select("response, responded_at, player_id, players(full_name)")
     .eq("match_id", matchId)
     .order("responded_at", { ascending: false });
 
@@ -329,7 +329,9 @@ async function getAttendanceForMatch(matchId: string) {
       return {
         detail: `Respondio ${formatResponseDetail(item.responded_at)}`,
         name: fullName,
+        playerId: item.player_id,
         status: mapAvailabilityResponse(item.response),
+        responseValue: item.response as AttendanceEntry["responseValue"],
       };
     });
 

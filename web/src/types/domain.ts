@@ -22,9 +22,11 @@ export type NextMatch = {
 };
 
 export type AttendanceEntry = {
+  playerId?: string;
   name: string;
   status: string;
   detail: string;
+  responseValue?: "going" | "backup" | "not_going" | "dropped";
 };
 
 export type AttendanceSummary = {
