@@ -20,50 +20,58 @@ export default async function Home() {
         <SectionCard eyebrow="Accion rapida" title="Tu estado para esta fecha">
           <div className="grid gap-4">
             <div className="rounded-[1.6rem] border border-line bg-surface-strong p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
-                    Proximo partido
-                  </p>
-                  <p className="mt-2 text-2xl font-black">
-                    {nextMatch.dateLabel} {" · "} {nextMatch.timeLabel}
-                  </p>
-                  <p className="mt-1 text-sm text-muted">{nextMatch.venue}</p>
+              <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr] xl:items-stretch">
+                <div className="flex h-full flex-col">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
+                        Proximo partido
+                      </p>
+                      <p className="mt-2 text-2xl font-black">
+                        {nextMatch.dateLabel} {" · "} {nextMatch.timeLabel}
+                      </p>
+                      <p className="mt-1 text-sm text-muted">{nextMatch.venue}</p>
+                    </div>
+                    <Pill tone="accent">{nextMatch.status}</Pill>
+                  </div>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <Link
+                      href="/confirmar"
+                      className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-white transition hover:bg-surface-dark"
+                    >
+                      Confirmar asistencia
+                    </Link>
+                    <Link
+                      href="/partido"
+                      className="rounded-full border border-line bg-background/40 px-5 py-3 text-sm font-semibold transition hover:border-foreground"
+                    >
+                      Ver partido
+                    </Link>
+                  </div>
                 </div>
-                <Pill tone="accent">{nextMatch.status}</Pill>
-              </div>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Link
-                  href="/confirmar"
-                  className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-white transition hover:bg-surface-dark"
-                >
-                  Confirmar asistencia
-                </Link>
-                <Link
-                  href="/partido"
-                  className="rounded-full border border-line bg-background/40 px-5 py-3 text-sm font-semibold transition hover:border-foreground"
-                >
-                  Ver partido
-                </Link>
+
+                <MatchCountdown
+                  isoDate={nextMatch.isoDate}
+                  isoTime={nextMatch.isoTime}
+                  compact
+                />
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[1.5rem] bg-[#f1ead8] p-4">
+              <div className="rounded-[1.5rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Formato</p>
                 <p className="mt-2 text-3xl font-black">{nextMatch.format}</p>
               </div>
-              <div className="rounded-[1.5rem] bg-[#dae8db] p-4">
+              <div className="rounded-[1.5rem] border border-[#2d6a3d]/10 bg-[#dbe8d8] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Objetivo</p>
                 <p className="mt-2 text-3xl font-black">{nextMatch.targetPlayers}</p>
               </div>
-              <div className="rounded-[1.5rem] bg-[#f7ddc9] p-4">
+              <div className="rounded-[1.5rem] border border-[#d96d2d]/12 bg-[#f4ddcf] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Fallback</p>
                 <p className="mt-2 text-3xl font-black">{nextMatch.fallbackPlayers}</p>
               </div>
             </div>
-
-            <MatchCountdown isoDate={nextMatch.isoDate} isoTime={nextMatch.isoTime} />
           </div>
         </SectionCard>
 
@@ -145,13 +153,13 @@ export default async function Home() {
               <Pill tone="lime">{laundryDuty.status}</Pill>
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[1.2rem] bg-[#f1ead8] p-4">
+              <div className="rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Modo</p>
                 <p className="mt-2 text-lg font-black capitalize">
                   {laundryDuty.assignmentMode}
                 </p>
               </div>
-              <div className="rounded-[1.2rem] bg-[#dae8db] p-4">
+              <div className="rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#dbe8d8] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Entrega</p>
                 <p className="mt-2 text-lg font-black">{laundryDuty.dueLabel}</p>
               </div>
