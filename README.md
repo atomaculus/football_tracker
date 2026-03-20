@@ -1,70 +1,114 @@
 # Football Tracker
 
-MVP para gestionar partidos de futbol amateur semanales entre amigos.
+App web para operar los partidos de futbol de los martes sin depender del Excel como herramienta principal.
 
-El proyecto nace para reemplazar un Excel usado para organizar los partidos de los martes y llevar la operacion semanal desde una app.
-
-## Objetivo
-
-Resolver bien la operacion del martes:
-
-- confirmar asistencia
-- armar lista de titulares y suplentes
-- registrar equipos
-- cargar resultado y goleadores
-- consultar historial
-- administrar el grupo de jugadores
+El proyecto arranco para reemplazar `Futbol Martes.xlsx` y hoy ya cubre el flujo base del MVP con datos reales en Supabase y deploy en Vercel.
 
 ## Estado actual
 
-Hoy el proyecto tiene:
+Hoy el proyecto ya tiene:
 
-- app web responsive en Next.js
-- navegacion MVP con pantallas de:
-  - inicio
-  - confirmar asistencia
-  - partido
-  - historial
-  - jugadores
-  - admin
-- capa de datos preparada para Supabase
-- lectura de jugadores y proximo partido desde Supabase cuando hay credenciales
-- formulario de confirmacion listo para persistir asistencia en Supabase
-- proyecto real de Supabase ya conectado localmente
-- jugadores iniciales y primer partido real ya cargados en Supabase
-- fallback local con seed data
-- schema SQL inicial para Supabase
-- seed/template de jugadores
-- plan funcional y roadmap tecnico documentados
+- app web en `Next.js 16`
+- deploy realizado en `Vercel`
+- base real en `Supabase`
+- login simple por cookie firmada
+- permisos admin reales
+- confirmacion de asistencia persistida
+- lista proyectada con prioridad del ultimo martes jugado
+- cierre automatico de convocatoria `90 minutos` antes
+- bajas tardias permitidas despues del cierre
+- cierre real del partido desde admin
+- carga de equipos, resultado y goles desde admin
+- historial real y ranking real basico
+- fallback a seed local cuando faltan datos
+
+## Reglas operativas ya modeladas
+
+- formato ideal: `14 jugadores => 7v7`
+- fallback operativo: `12 jugadores => 6v6`
+- con menos de `12` la fecha queda en riesgo o suspendida
+- la convocatoria no se cierra por cupo completo
+- despues de los `14` primeros, los demas quedan como suplentes
+- el ultimo martes jugado da prioridad para la fecha siguiente
+- la convocatoria cierra automaticamente `90 minutos` antes del partido
+- despues del cierre se permiten solo bajas tardias, no nuevas altas
+
+## Auth simple actual
+
+La auth del MVP no usa OTP todavia. Usa:
+
+- seleccion de jugador
+- `APP_GROUP_ACCESS_CODE`
+- `APP_ADMIN_ACCESS_CODE` para entrar en modo admin
+- cookie de sesion firmada con `APP_SESSION_SECRET`
+
+Admins reales cargados hoy:
+
+- `Pablo Ferrara`
+- `Lucas Lopez`
+- `Atilio Maculus`
+
+## Flujo real que ya existe
+
+### Jugador
+
+- entra por `/login`
+- accede a `/confirmar`
+- confirma `Voy`, `Suplente` o `No voy`
+- si la convocatoria ya cerro, solo puede darse de baja
+
+### Admin
+
+- entra por `/login` en modo admin
+- opera `/admin`
+- mueve jugadores entre titular, suplente y no va
+- cierra convocatoria
+- registra asistencia real del partido
+- carga equipos
+- asigna jugadores a equipos
+- carga goles
+- marca el partido como `played`
+
+## Qué sigue siendo parcial o mejorable
+
+- `/partido` cae al mock si un partido jugado no tiene `teams` y `goals` reales cargados
+- el panel admin funciona, pero quedo largo para operación semanal y conviene compactarlo
+- la logística real de camisetas todavía no esta automatizada end to end
+- la auth es suficiente para MVP, pero no es la versión final tipo OTP/magic link
+- parte de las estadísticas reales dependen de que el partido jugado tenga equipos y goles cargados
 
 ## Stack
 
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Supabase JS
+- `Next.js 16`
+- `React 19`
+- `TypeScript`
+- `Tailwind CSS 4`
+- `Supabase JS`
+- `Vercel`
 
 ## Estructura
 
 - `web/`: app frontend
-- `supabase/`: schema y seeds iniciales
+- `supabase/`: schema, seed y archivos auxiliares
 - `MVP_PLAN.md`: alcance funcional
 - `TECH_ROADMAP.md`: roadmap tecnico
-- `Futbol Martes.xlsx`: fuente operativa original, fuera del flujo principal de la app
+- `PROJECT_STATUS.md`: continuidad y contexto historico
+- `Futbol Martes.xlsx`: fuente original
+- `Futbol Martes (version 1).xlsx`: variante usada para rescatar datos reales de una fecha
 
-## Datos
+## Variables de entorno
 
-La app ya no depende del Excel para arrancar.
+En `web/.env.example` quedaron las variables previstas:
 
-Decisiones actuales:
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+APP_GROUP_ACCESS_CODE=
+APP_ADMIN_ACCESS_CODE=
+APP_SESSION_SECRET=
+```
 
-- no importar historico completo por ahora
-- priorizar seed inicial de jugadores
-- historial viejo puede entrar despues
-- invitacion por QR/link queda anotada para una etapa posterior
-
-## Como correr la app
+## Desarrollo local
 
 Ir a `web/` y ejecutar:
 
@@ -75,47 +119,48 @@ npm run dev
 
 Abrir `http://localhost:3000`
 
-## Variables de entorno
-
-En `web/.env.example` quedaron las variables previstas:
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-```
-
-Mientras no se configuren, la app usa seed local.
-
-## Archivos clave
+## Archivos clave para retomar
 
 - `web/src/lib/data.ts`
-- `web/src/lib/supabase.ts`
-- `web/src/lib/seed-data.ts`
+- `web/src/lib/auth.ts`
+- `web/src/app/login/actions.ts`
+- `web/src/app/confirmar/actions.ts`
+- `web/src/app/admin/actions.ts`
+- `web/src/app/admin/page.tsx`
+- `web/src/components/admin-final-roster-manager.tsx`
+- `web/src/components/admin-match-result-manager.tsx`
 - `web/src/types/domain.ts`
 - `supabase/schema.sql`
-- `supabase/seed_players.sql`
-- `supabase/players_template.csv`
 
-## Siguiente paso recomendado
+## Commits recientes importantes
 
-Validar el flujo real de asistencia y avanzar con admin real:
+- `39ac895` Add simple auth and admin session gating
+- `c554a90` Refresh matchday UI and visible player stats
+- `7241754` Build real history and leaderboard stats
+- `199597c` Add admin teams and scoring workflow
+- `92d506b` Add admin match closure workflow
+- `c5d28e7` Allow late drops after signup close
 
-1. probar `Jugadores`
-2. probar `Confirmar asistencia`
-3. refrescar `Inicio` y `Admin`
-4. construir apertura / cierre / suspension real del partido
+## Nota importante sobre estadísticas
 
-## Historial de avances
+Si en `Historial` o `Jugadores` aparece poca señal estadística, no significa que el cálculo esté roto necesariamente. Puede pasar que el partido jugado tenga:
 
-Commits principales hasta ahora:
+- participantes reales cargados
+- pero sin `teams`
+- y sin `goals`
 
-- `47ddae1` Bootstrap web MVP base
-- `3754c6b` Add navigable MVP screens
-- `d8b75a1` Refine MVP UX and add players view
-- `a391b3b` Add schema and player seed template
-- `312d880` Prepare web app for Supabase data layer
-- `6519107` Wire availability flow and Supabase-ready dashboard
-- `b7b6802` Fix confirm action export for Next server actions
-- `1d286cf` Align MVP rules with real match formats
-- `7c43870` Add jersey laundry duty MVP flow
-- `1ba4e13` Add project continuity status file
+En ese caso:
+
+- las presencias reales si se ven
+- la diferencia y el detalle fino quedan limitados
+- el sistema usa fallback cuando puede, pero no reemplaza resultado real
+
+## Próximo foco recomendado
+
+No es backend crítico, sino operación y pulido:
+
+1. usar el MVP en el próximo martes real
+2. detectar fricción concreta del panel admin
+3. compactar UX del admin
+4. terminar la logística de camisetas
+5. si hace falta, pasar de auth simple a OTP
