@@ -30,6 +30,9 @@ import type {
   MatchParticipantSummary,
   NextMatch,
   PlayersPageData,
+  Scorer,
+  Team,
+  GoalEntry,
 } from "@/types/domain";
 
 type MatchRow = {
@@ -58,6 +61,22 @@ type MatchParticipantRow = {
   players: { full_name?: string } | { full_name?: string }[] | null;
   priority_note: string | null;
   role: "starter" | "substitute" | "guest";
+  team_id?: string | null;
+};
+type TeamRow = {
+  color: string | null;
+  goals: number;
+  id: string;
+  match_id: string;
+  name: string;
+};
+type GoalRow = {
+  id: string;
+  is_own_goal: boolean;
+  minute: number | null;
+  scorer_player_id: string;
+  team_id: string | null;
+  players: { full_name?: string } | { full_name?: string }[] | null;
 };
 
 function formatMatchDate(date: string) {
@@ -472,7 +491,7 @@ async function getMatchParticipantsForMatch(matchId: string) {
 
   const { data, error } = await supabase
     .from("match_participants")
-    .select("attendance_status, player_id, priority_note, role, players(full_name)")
+    .select("attendance_status, player_id, priority_note, role, players(full_name), team_id")
     .eq("match_id", matchId)
     .order("priority_score", { ascending: false });
 
@@ -487,6 +506,7 @@ async function getMatchParticipantsForMatch(matchId: string) {
       playerId: participant.player_id,
       priorityNote: participant.priority_note ?? undefined,
       role: participant.role,
+      teamId: participant.team_id ?? null,
     }),
   );
 
@@ -510,6 +530,99 @@ async function getMatchParticipantsForMatch(matchId: string) {
   return {
     participants,
     summary,
+  };
+}
+
+async function getTeamsAndGoalsForMatch(matchId: string) {
+  if (!hasSupabaseEnv()) {
+    return null;
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const [{ data: teams, error: teamsError }, { data: participants, error: participantsError }, { data: goals, error: goalsError }] =
+    await Promise.all([
+      supabase.from("teams").select("id, match_id, name, color, goals").eq("match_id", matchId),
+      supabase
+        .from("match_participants")
+        .select("attendance_status, player_id, role, team_id, players(full_name)")
+        .eq("match_id", matchId)
+        .order("priority_score", { ascending: false }),
+      supabase
+        .from("goals")
+        .select("id, minute, is_own_goal, scorer_player_id, team_id, players(full_name)")
+        .eq("match_id", matchId)
+        .order("minute", { ascending: true }),
+    ]);
+
+  if (teamsError || participantsError || goalsError) {
+    return null;
+  }
+
+  const typedTeams = (teams ?? []) as TeamRow[];
+  const typedParticipants = (participants ?? []) as MatchParticipantRow[];
+  const typedGoals = (goals ?? []) as GoalRow[];
+
+  const playersByTeam = typedParticipants.reduce<Map<string, string[]>>((accumulator, participant) => {
+    if (
+      participant.team_id &&
+      (participant.attendance_status === "played" || participant.attendance_status === "confirmed")
+    ) {
+      const existingPlayers = accumulator.get(participant.team_id) ?? [];
+      existingPlayers.push(getPlayerName(participant.players));
+      accumulator.set(participant.team_id, existingPlayers);
+    }
+
+    return accumulator;
+  }, new Map());
+
+  const matchTeams: Team[] = typedTeams.map((team) => ({
+    color: team.color ?? "bg-[#e4ecd9] text-foreground",
+    id: team.id,
+    name: team.name,
+    players: playersByTeam.get(team.id) ?? [],
+    score: team.goals,
+  }));
+
+  const teamNameById = new Map(matchTeams.map((team) => [team.id ?? "", team.name]));
+  const scorersByPlayerAndTeam = new Map<string, Scorer>();
+
+  for (const goal of typedGoals) {
+    const scorerName = getPlayerName(goal.players);
+    const teamName = goal.team_id ? (teamNameById.get(goal.team_id) ?? "Equipo") : "Sin equipo";
+    const scorerKey = `${goal.scorer_player_id}-${goal.team_id ?? "none"}-${goal.is_own_goal}`;
+    const existingScorer = scorersByPlayerAndTeam.get(scorerKey);
+
+    if (existingScorer) {
+      existingScorer.goals += 1;
+      continue;
+    }
+
+    scorersByPlayerAndTeam.set(scorerKey, {
+      goals: 1,
+      id: goal.id,
+      minute: goal.minute ?? undefined,
+      name: goal.is_own_goal ? `${scorerName} (en contra)` : scorerName,
+      team: teamName,
+    });
+  }
+
+  const goalEntries: GoalEntry[] = typedGoals.map((goal) => ({
+    id: goal.id,
+    isOwnGoal: goal.is_own_goal,
+    minute: goal.minute ?? undefined,
+    scorerName: getPlayerName(goal.players),
+    teamId: goal.team_id,
+    teamName: goal.team_id ? (teamNameById.get(goal.team_id) ?? "Equipo") : "Sin equipo",
+  }));
+
+  return {
+    goalEntries,
+    matchTeams,
+    scorers: Array.from(scorersByPlayerAndTeam.values()),
   };
 }
 
@@ -563,9 +676,41 @@ export async function getAvailabilityPageData(): Promise<AvailabilityPageData> {
 }
 
 export async function getMatchPageData(): Promise<MatchPageData> {
+  const latestPlayedMatch = hasSupabaseEnv()
+    ? await (async () => {
+        const supabase = getSupabaseClient();
+        if (!supabase) {
+          return null;
+        }
+
+        const { data, error } = await supabase
+          .from("matches")
+          .select("id")
+          .eq("status", "played")
+          .order("match_date", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error || !data) {
+          return null;
+        }
+
+        return data;
+      })()
+    : null;
+  const teamsAndGoals = latestPlayedMatch
+    ? await getTeamsAndGoalsForMatch(latestPlayedMatch.id)
+    : null;
+
   return {
-    scorers: scorersSeed,
-    teams: teamsSeed,
+    scorers:
+      teamsAndGoals?.scorers.length
+        ? teamsAndGoals.scorers
+        : scorersSeed,
+    teams:
+      teamsAndGoals?.matchTeams.length
+        ? teamsAndGoals.matchTeams
+        : teamsSeed,
   };
 }
 
@@ -593,6 +738,9 @@ export async function getAdminPageData(): Promise<AdminPageData> {
   const currentParticipants = upcomingMatch
     ? await getMatchParticipantsForMatch(upcomingMatch.id)
     : null;
+  const currentTeamsAndGoals = upcomingMatch
+    ? await getTeamsAndGoalsForMatch(upcomingMatch.id)
+    : null;
   const currentMatch = buildNextMatch(upcomingMatch, attendanceData?.counts);
   const attendanceSummary: AttendanceSummary = attendanceData?.attendanceSummary ?? {
     backups: currentMatch.substitutes,
@@ -618,7 +766,9 @@ export async function getAdminPageData(): Promise<AdminPageData> {
     attendanceBoard: projectedBoard.attendanceBoard,
     attendanceSummary,
     currentMatch,
+    goalEntries: currentTeamsAndGoals?.goalEntries ?? [],
     laundryDuty: laundryDutySeed,
+    matchTeams: currentTeamsAndGoals?.matchTeams ?? [],
     projectedStarters: projectedBoard.projectedStarters,
     projectedSubstitutes: projectedBoard.projectedSubstitutes,
   };

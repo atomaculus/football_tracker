@@ -20,6 +20,11 @@ export type ParticipantAdminActionState = {
   status: "idle" | "success" | "error" | "demo";
 };
 
+export type MatchResultAdminActionState = {
+  message: string;
+  status: "idle" | "success" | "error" | "demo";
+};
+
 type AttendanceQueryRow = {
   player_id: string;
   players: { full_name?: string } | { full_name?: string }[] | null;
@@ -259,6 +264,25 @@ async function markLateCancelParticipant(matchId: string, playerId: string) {
   return { error: false, message: "" };
 }
 
+async function getMatchTeams(matchId: string) {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { data: null, error: true };
+  }
+
+  const { data, error } = await supabase
+    .from("teams")
+    .select("id, name, color, goals")
+    .eq("match_id", matchId)
+    .order("name", { ascending: true });
+
+  if (error) {
+    return { data: null, error: true };
+  }
+
+  return { data, error: false };
+}
+
 export async function updateMatchStatus(
   _previousState: MatchAdminActionState,
   formData: FormData,
@@ -324,7 +348,7 @@ export async function updateMatchStatus(
   if (status === "played") {
     const { data: participants, error: participantsError } = await supabase
       .from("match_participants")
-      .select("attendance_status")
+      .select("attendance_status, team_id")
       .eq("match_id", matchId);
 
     if (participantsError || !participants) {
@@ -343,6 +367,30 @@ export async function updateMatchStatus(
 
       return {
         message: "Antes de marcar el partido como jugado, carga al menos un participante con estado `Jugo`.",
+        status: "error",
+      };
+    }
+
+    const playedWithoutTeam = participants.filter(
+      (participant) => participant.attendance_status === "played" && !participant.team_id,
+    ).length;
+
+    if (playedWithoutTeam > 0) {
+      await supabase.from("matches").update({ status: "closed" }).eq("id", matchId);
+
+      return {
+        message: "Antes de marcar el partido como jugado, asigna equipo a todos los jugadores que realmente jugaron.",
+        status: "error",
+      };
+    }
+
+    const teamsResult = await getMatchTeams(matchId);
+
+    if (teamsResult.error || !teamsResult.data || teamsResult.data.length < 2) {
+      await supabase.from("matches").update({ status: "closed" }).eq("id", matchId);
+
+      return {
+        message: "Antes de marcar el partido como jugado, carga los dos equipos y el resultado.",
         status: "error",
       };
     }
@@ -577,6 +625,232 @@ export async function updateMatchParticipantStatusByAdmin(
 
   return {
     message: "Asistencia real actualizada.",
+    status: "success",
+  };
+}
+
+export async function saveMatchTeamsByAdmin(
+  _previousState: MatchResultAdminActionState,
+  formData: FormData,
+): Promise<MatchResultAdminActionState> {
+  const matchId = String(formData.get("matchId") ?? "");
+  const teamAId = String(formData.get("teamAId") ?? "");
+  const teamAName = String(formData.get("teamAName") ?? "").trim();
+  const teamAColor = String(formData.get("teamAColor") ?? "bg-lime text-foreground");
+  const teamAGoals = Number(formData.get("teamAGoals") ?? 0);
+  const teamBId = String(formData.get("teamBId") ?? "");
+  const teamBName = String(formData.get("teamBName") ?? "").trim();
+  const teamBColor = String(formData.get("teamBColor") ?? "bg-accent text-white");
+  const teamBGoals = Number(formData.get("teamBGoals") ?? 0);
+
+  if (!matchId || !teamAName || !teamBName) {
+    return {
+      message: "Falta el partido o los nombres de los equipos.",
+      status: "error",
+    };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return {
+      message: "La carga de equipos queda activa cuando la app usa Supabase real.",
+      status: "demo",
+    };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return {
+      message: "No se pudo conectar con Supabase.",
+      status: "error",
+    };
+  }
+
+  const upserts = [
+    {
+      color: teamAColor,
+      goals: Number.isFinite(teamAGoals) ? teamAGoals : 0,
+      id: teamAId || undefined,
+      match_id: matchId,
+      name: teamAName,
+    },
+    {
+      color: teamBColor,
+      goals: Number.isFinite(teamBGoals) ? teamBGoals : 0,
+      id: teamBId || undefined,
+      match_id: matchId,
+      name: teamBName,
+    },
+  ];
+
+  const { error } = await supabase.from("teams").upsert(upserts);
+
+  if (error) {
+    return {
+      message: "No se pudieron guardar los equipos.",
+      status: "error",
+    };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/partido");
+
+  return {
+    message: "Equipos y resultado guardados.",
+    status: "success",
+  };
+}
+
+export async function assignParticipantTeamByAdmin(
+  _previousState: MatchResultAdminActionState,
+  formData: FormData,
+): Promise<MatchResultAdminActionState> {
+  const matchId = String(formData.get("matchId") ?? "");
+  const playerId = String(formData.get("playerId") ?? "");
+  const teamId = String(formData.get("teamId") ?? "");
+
+  if (!matchId || !playerId) {
+    return {
+      message: "Falta el partido o el jugador a asignar.",
+      status: "error",
+    };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return {
+      message: "La asignacion de equipos queda activa cuando la app usa Supabase real.",
+      status: "demo",
+    };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return {
+      message: "No se pudo conectar con Supabase.",
+      status: "error",
+    };
+  }
+
+  const { error } = await supabase
+    .from("match_participants")
+    .update({ team_id: teamId || null })
+    .eq("match_id", matchId)
+    .eq("player_id", playerId);
+
+  if (error) {
+    return {
+      message: "No se pudo asignar el equipo del jugador.",
+      status: "error",
+    };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/partido");
+
+  return {
+    message: "Equipo actualizado.",
+    status: "success",
+  };
+}
+
+export async function addGoalByAdmin(
+  _previousState: MatchResultAdminActionState,
+  formData: FormData,
+): Promise<MatchResultAdminActionState> {
+  const matchId = String(formData.get("matchId") ?? "");
+  const scorerPlayerId = String(formData.get("scorerPlayerId") ?? "");
+  const teamId = String(formData.get("teamId") ?? "");
+  const minuteValue = String(formData.get("minute") ?? "").trim();
+  const isOwnGoal = String(formData.get("isOwnGoal") ?? "") === "true";
+
+  if (!matchId || !scorerPlayerId || !teamId) {
+    return {
+      message: "Falta el partido, el goleador o el equipo del gol.",
+      status: "error",
+    };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return {
+      message: "La carga de goles queda activa cuando la app usa Supabase real.",
+      status: "demo",
+    };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return {
+      message: "No se pudo conectar con Supabase.",
+      status: "error",
+    };
+  }
+
+  const minute = minuteValue ? Number(minuteValue) : null;
+  const { error } = await supabase.from("goals").insert({
+    is_own_goal: isOwnGoal,
+    match_id: matchId,
+    minute: Number.isFinite(minute) ? minute : null,
+    scorer_player_id: scorerPlayerId,
+    team_id: teamId,
+  });
+
+  if (error) {
+    return {
+      message: "No se pudo registrar el gol.",
+      status: "error",
+    };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/partido");
+
+  return {
+    message: "Gol registrado.",
+    status: "success",
+  };
+}
+
+export async function deleteGoalByAdmin(
+  _previousState: MatchResultAdminActionState,
+  formData: FormData,
+): Promise<MatchResultAdminActionState> {
+  const goalId = String(formData.get("goalId") ?? "");
+
+  if (!goalId) {
+    return {
+      message: "Falta el gol a eliminar.",
+      status: "error",
+    };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return {
+      message: "La correccion de goles queda activa cuando la app usa Supabase real.",
+      status: "demo",
+    };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return {
+      message: "No se pudo conectar con Supabase.",
+      status: "error",
+    };
+  }
+
+  const { error } = await supabase.from("goals").delete().eq("id", goalId);
+
+  if (error) {
+    return {
+      message: "No se pudo eliminar el gol.",
+      status: "error",
+    };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/partido");
+
+  return {
+    message: "Gol eliminado.",
     status: "success",
   };
 }

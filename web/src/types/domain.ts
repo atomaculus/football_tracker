@@ -45,6 +45,7 @@ export type MatchParticipantEntry = {
   playerId: string;
   name: string;
   role: "starter" | "substitute" | "guest";
+  teamId?: string | null;
   attendanceStatus: "confirmed" | "played" | "late_cancel" | "no_show";
   priorityNote?: string;
 };
@@ -79,6 +80,7 @@ export type AvailabilityOption = {
 };
 
 export type Team = {
+  id?: string;
   name: string;
   color: string;
   score: number;
@@ -86,9 +88,20 @@ export type Team = {
 };
 
 export type Scorer = {
+  id?: string;
+  minute?: number;
   name: string;
   goals: number;
   team: string;
+};
+
+export type GoalEntry = {
+  id: string;
+  minute?: number;
+  scorerName: string;
+  teamId?: string | null;
+  teamName: string;
+  isOwnGoal: boolean;
 };
 
 export type HistoryMatch = {
@@ -158,6 +171,8 @@ export type AdminPageData = {
   laundryDuty: LaundryDuty;
   actualParticipants: MatchParticipantEntry[];
   actualParticipantSummary: MatchParticipantSummary;
+  goalEntries: GoalEntry[];
+  matchTeams: Team[];
   projectedStarters: number;
   projectedSubstitutes: number;
 };

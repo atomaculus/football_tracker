@@ -2,6 +2,7 @@ import { AppShell } from "@/components/app-shell";
 import { AdminAttendanceManager } from "@/components/admin-attendance-manager";
 import { AdminFinalRosterManager } from "@/components/admin-final-roster-manager";
 import { AdminMatchControls } from "@/components/admin-match-controls";
+import { AdminMatchResultManager } from "@/components/admin-match-result-manager";
 import { Pill, SectionCard } from "@/components/ui";
 import { getAdminPageData, getDashboardData } from "@/lib/data";
 
@@ -14,7 +15,9 @@ export default async function AdminPage() {
     attendanceBoard,
     attendanceSummary,
     currentMatch,
+    goalEntries,
     laundryDuty,
+    matchTeams,
     projectedStarters,
     projectedSubstitutes,
   } = await getAdminPageData();
@@ -100,6 +103,15 @@ export default async function AdminPage() {
           participants={actualParticipants}
         />
 
+        <AdminMatchResultManager
+          goalEntries={goalEntries}
+          matchId={currentMatch.id}
+          participants={actualParticipants}
+          teams={matchTeams}
+        />
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <SectionCard eyebrow="Camisetas" title="Encargado de lavado">
           <div className="rounded-[1.5rem] border border-line bg-surface-strong p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
