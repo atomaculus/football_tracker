@@ -1,5 +1,4 @@
 import {
-  adminActionsSeed,
   attendanceBoardSeed,
   availabilityOptionsSeed,
   clusterPlayersSeed,
@@ -14,7 +13,9 @@ import {
 import { getSupabaseClient, hasSupabaseEnv } from "@/lib/supabase";
 import type {
   AdminPageData,
+  AdminInsight,
   AttendanceEntry,
+  AttendanceSummary,
   AvailabilityPageData,
   ClusterPlayer,
   DashboardData,
@@ -108,6 +109,92 @@ function formatResponseDetail(timestamp: string | null) {
     minute: "2-digit",
     month: "2-digit",
   }).format(new Date(timestamp));
+}
+
+function getAdminInsights(nextMatch: NextMatch, attendanceSummary: AttendanceSummary): AdminInsight[] {
+  const { backups, confirmed } = attendanceSummary;
+
+  const formatInsight =
+    confirmed >= nextMatch.targetPlayers
+      ? {
+          detail: `${confirmed} confirmados. Se llega al objetivo ideal sin depender de suplentes.`,
+          label: "Formato recomendado",
+          tone: "lime" as const,
+          value: nextMatch.format,
+        }
+      : confirmed >= nextMatch.fallbackPlayers
+        ? {
+            detail: `${confirmed} confirmados. No llega a ${nextMatch.targetPlayers}, pero alcanza para jugar sin romper la regla operativa.`,
+            label: "Formato recomendado",
+            tone: "default" as const,
+            value: "6v6",
+          }
+        : confirmed + backups >= nextMatch.fallbackPlayers
+          ? {
+              detail: `${confirmed} confirmados y ${backups} suplentes. Solo se salva la fecha si entran suplentes.`,
+              label: "Formato recomendado",
+              tone: "accent" as const,
+              value: "Depende de suplentes",
+            }
+          : {
+              detail: `${confirmed} confirmados y ${backups} suplentes. No alcanza el minimo de ${nextMatch.fallbackPlayers}.`,
+              label: "Formato recomendado",
+              tone: "accent" as const,
+              value: "Suspender",
+            };
+
+  const quorumInsight =
+    confirmed >= nextMatch.fallbackPlayers
+      ? {
+          detail: `El minimo operativo ya esta cubierto. Si se cae alguien, quedan ${backups} suplentes como red.`,
+          label: "Quorum",
+          tone: "lime" as const,
+          value: "Cubierto",
+        }
+      : confirmed + backups >= nextMatch.fallbackPlayers
+        ? {
+            detail: `Faltan ${nextMatch.fallbackPlayers - confirmed} para el minimo, pero los suplentes todavia sostienen la fecha.`,
+            label: "Quorum",
+            tone: "default" as const,
+            value: "Franco",
+          }
+        : {
+            detail: `Faltan ${nextMatch.fallbackPlayers - (confirmed + backups)} jugadores para llegar al minimo incluso contando suplentes.`,
+            label: "Quorum",
+            tone: "accent" as const,
+            value: "En riesgo",
+          };
+
+  const adminActionInsight =
+    nextMatch.rawStatus === "open" && confirmed >= nextMatch.targetPlayers
+      ? {
+          detail: "La convocatoria ya tiene cupo ideal. El siguiente paso logico es cerrar la lista o pasar suplentes a espera.",
+          label: "Siguiente accion",
+          tone: "lime" as const,
+          value: "Cerrar lista",
+        }
+      : nextMatch.rawStatus === "open" && confirmed < nextMatch.fallbackPlayers
+        ? {
+            detail: "La fecha sigue abierta, pero conviene monitorear bajas y definir si se sostiene con suplentes o se suspende.",
+            label: "Siguiente accion",
+            tone: "accent" as const,
+            value: "Revisar quorum",
+          }
+        : nextMatch.rawStatus === "closed"
+          ? {
+              detail: "La convocatoria ya esta cerrada. Lo siguiente es ordenar lista final, camisetas y armado de equipos.",
+              label: "Siguiente accion",
+              tone: "default" as const,
+              value: "Armar fecha",
+            }
+          : {
+              detail: "El admin ya puede mover el estado del partido. El siguiente bloque natural es conectar armado de lista y equipos.",
+              label: "Siguiente accion",
+              tone: "default" as const,
+              value: "Seguir operando",
+            };
+
+  return [formatInsight, quorumInsight, adminActionInsight];
 }
 
 function buildNextMatch(
@@ -211,7 +298,7 @@ async function getAttendanceForMatch(matchId: string) {
     .from("availability_responses")
     .select("response, responded_at, players(full_name)")
     .eq("match_id", matchId)
-    .order("responded_at", { ascending: true });
+    .order("responded_at", { ascending: false });
 
   if (error || !data) {
     return null;
@@ -232,9 +319,7 @@ async function getAttendanceForMatch(matchId: string) {
     { backup: 0, going: 0, notGoing: 0 },
   );
 
-  const attendanceBoard: AttendanceEntry[] = data
-    .slice(0, 8)
-    .map((item) => {
+  const attendanceEntries: AttendanceEntry[] = data.map((item) => {
       const playerData = Array.isArray(item.players) ? item.players[0] : item.players;
       const fullName =
         playerData && typeof playerData === "object" && "full_name" in playerData
@@ -248,7 +333,17 @@ async function getAttendanceForMatch(matchId: string) {
       };
     });
 
-  return { attendanceBoard, counts };
+  return {
+    attendanceBoard: attendanceEntries.slice(0, 8),
+    attendanceSummary: {
+      backups: counts.backup,
+      confirmed: counts.going,
+      declined: counts.notGoing,
+      totalResponses: data.length,
+    },
+    fullAttendanceBoard: attendanceEntries,
+    counts,
+  };
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
@@ -311,12 +406,25 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
 }
 
 export async function getAdminPageData(): Promise<AdminPageData> {
-  const { attendanceBoard, laundryDuty, nextMatch } = await getDashboardData();
+  const upcomingMatch = await getUpcomingMatchFromSupabase();
+  const attendanceData = upcomingMatch
+    ? await getAttendanceForMatch(upcomingMatch.id)
+    : null;
+  const currentMatch = buildNextMatch(upcomingMatch, attendanceData?.counts);
+  const attendanceSummary: AttendanceSummary = attendanceData?.attendanceSummary ?? {
+    backups: currentMatch.substitutes,
+    confirmed: currentMatch.confirmed,
+    declined: 0,
+    totalResponses: attendanceBoardSeed.length,
+  };
 
   return {
-    adminActions: adminActionsSeed,
-    attendanceBoard,
-    currentMatch: nextMatch,
-    laundryDuty,
+    adminInsights: getAdminInsights(currentMatch, attendanceSummary),
+    attendanceBoard: attendanceData?.fullAttendanceBoard.length
+      ? attendanceData.fullAttendanceBoard
+      : attendanceBoardSeed,
+    attendanceSummary,
+    currentMatch,
+    laundryDuty: laundryDutySeed,
   };
 }

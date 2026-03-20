@@ -5,7 +5,7 @@ import { getAdminPageData, getDashboardData } from "@/lib/data";
 
 export default async function AdminPage() {
   const { navItems, nextMatch } = await getDashboardData();
-  const { adminActions, attendanceBoard, currentMatch, laundryDuty } =
+  const { adminInsights, attendanceBoard, attendanceSummary, currentMatch, laundryDuty } =
     await getAdminPageData();
 
   return (
@@ -18,22 +18,40 @@ export default async function AdminPage() {
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <AdminMatchControls currentMatch={currentMatch} />
 
-        <SectionCard eyebrow="Acciones" title="Backlog admin">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {adminActions.map((action) => (
+        <SectionCard eyebrow="Lectura real" title="Pulso operativo">
+          <div className="grid gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[1.4rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">Confirmados</p>
+                <p className="mt-2 text-3xl font-black">{attendanceSummary.confirmed}</p>
+              </div>
+              <div className="rounded-[1.4rem] border border-[#d96d2d]/12 bg-[#f4ddcf] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">Suplentes</p>
+                <p className="mt-2 text-3xl font-black">{attendanceSummary.backups}</p>
+              </div>
+              <div className="rounded-[1.4rem] border border-[#2d6a3d]/10 bg-[#dbe8d8] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">No van</p>
+                <p className="mt-2 text-3xl font-black">{attendanceSummary.declined}</p>
+              </div>
+              <div className="rounded-[1.4rem] border border-line bg-surface-strong p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">Respuestas</p>
+                <p className="mt-2 text-3xl font-black">{attendanceSummary.totalResponses}</p>
+              </div>
+            </div>
+
+            {adminInsights.map((insight) => (
               <div
-                key={action}
+                key={insight.label}
                 className="rounded-[1.4rem] border border-line bg-surface-strong p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-sm font-extrabold uppercase tracking-[0.08em]">
-                    {action}
+                    {insight.label}
                   </p>
-                  <Pill>Backlog</Pill>
+                  <Pill tone={insight.tone}>{insight.value}</Pill>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-muted">
-                  Esta accion queda lista para conectar en la siguiente etapa con Supabase y
-                  permisos de administrador.
+                  {insight.detail}
                 </p>
               </div>
             ))}
@@ -41,10 +59,15 @@ export default async function AdminPage() {
         </SectionCard>
 
         <SectionCard eyebrow="Lista operativa" title="Jugadores de esta fecha" dark>
+          <div className="mb-5 flex flex-wrap gap-2">
+            <Pill tone="lime">{attendanceSummary.confirmed} titulares</Pill>
+            <Pill tone="accent">{attendanceSummary.backups} suplentes</Pill>
+            <Pill>{attendanceSummary.declined} bajas</Pill>
+          </div>
           <div className="space-y-3">
             {attendanceBoard.map((player) => (
               <div
-                key={player.name}
+                key={`${player.name}-${player.detail}`}
                 className="rounded-[1.4rem] border border-white/10 bg-white/6 px-4 py-4"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -74,13 +97,13 @@ export default async function AdminPage() {
               <Pill tone="lime">{laundryDuty.status}</Pill>
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[1.2rem] bg-[#f1ead8] p-4">
+              <div className="rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Modo</p>
                 <p className="mt-2 text-lg font-black capitalize">
                   {laundryDuty.assignmentMode}
                 </p>
               </div>
-              <div className="rounded-[1.2rem] bg-[#dae8db] p-4">
+              <div className="rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#dbe8d8] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Entrega</p>
                 <p className="mt-2 text-lg font-black">{laundryDuty.dueLabel}</p>
               </div>

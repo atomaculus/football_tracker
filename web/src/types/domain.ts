@@ -27,6 +27,20 @@ export type AttendanceEntry = {
   detail: string;
 };
 
+export type AttendanceSummary = {
+  backups: number;
+  confirmed: number;
+  declined: number;
+  totalResponses: number;
+};
+
+export type AdminInsight = {
+  detail: string;
+  label: string;
+  tone: "default" | "lime" | "accent";
+  value: string;
+};
+
 export type LaundryDuty = {
   assigneeName: string;
   assignmentMode: "rotation" | "random";
@@ -112,8 +126,9 @@ export type PlayersPageData = {
 };
 
 export type AdminPageData = {
-  adminActions: AdminAction[];
   attendanceBoard: AttendanceEntry[];
+  attendanceSummary: AttendanceSummary;
+  adminInsights: AdminInsight[];
   currentMatch: NextMatch;
   laundryDuty: LaundryDuty;
 };
