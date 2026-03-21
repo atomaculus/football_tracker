@@ -1,10 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { Pill, SectionCard } from "@/components/ui";
-import { getViewerSession } from "@/lib/auth";
+import { requireViewerSession } from "@/lib/auth";
 import { getDashboardData, getHistoryPageData, getPlayersPageData } from "@/lib/data";
 
 export default async function PlayersPage() {
-  const viewer = await getViewerSession();
+  const viewer = await requireViewerSession("/jugadores");
   const { navItems, nextMatch } = await getDashboardData();
   const [{ clusterPlayers }, { leaderboard }] = await Promise.all([
     getPlayersPageData(),

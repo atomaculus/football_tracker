@@ -1,10 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { SectionCard } from "@/components/ui";
-import { getViewerSession } from "@/lib/auth";
+import { requireViewerSession } from "@/lib/auth";
 import { getDashboardData, getMatchPageData } from "@/lib/data";
 
 export default async function MatchPage() {
-  const viewer = await getViewerSession();
+  const viewer = await requireViewerSession("/partido");
   const { navItems, nextMatch } = await getDashboardData();
   const { scorers, teams } = await getMatchPageData();
 

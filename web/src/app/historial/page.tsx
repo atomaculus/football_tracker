@@ -1,10 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { SectionCard } from "@/components/ui";
-import { getViewerSession } from "@/lib/auth";
+import { requireViewerSession } from "@/lib/auth";
 import { getDashboardData, getHistoryPageData } from "@/lib/data";
 
 export default async function HistoryPage() {
-  const viewer = await getViewerSession();
+  const viewer = await requireViewerSession("/historial");
   const { navItems, nextMatch } = await getDashboardData();
   const { historyMatches, leaderboard } = await getHistoryPageData();
 
