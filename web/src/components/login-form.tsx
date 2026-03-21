@@ -93,10 +93,7 @@ export function LoginForm({
         </label>
       ) : null}
 
-      <div className="flex items-center justify-between gap-3 rounded-[1.5rem] border border-line bg-surface-strong p-4">
-        <p className="text-sm leading-6 text-muted">
-          Login simple para el MVP. Mas adelante se puede migrar a OTP o magic link.
-        </p>
+      <div className="flex items-center justify-end gap-3 rounded-[1.5rem] border border-line bg-surface-strong p-4">
         <SubmitButton />
       </div>
 

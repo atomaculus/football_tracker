@@ -31,7 +31,6 @@ export default async function ConfirmPage() {
         matchNotes={availabilityData.matchNotes}
         matchStatus={availabilityData.matchStatus}
         lateDropAllowed={availabilityData.lateDropAllowed}
-        mode={availabilityData.currentMode}
         players={availabilityData.players}
         submissionsOpen={availabilityData.submissionsOpen}
       />

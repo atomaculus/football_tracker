@@ -20,10 +20,8 @@ const initialAvailabilityActionState = {
 
 function SubmitButton({
   disabled,
-  mode,
 }: {
   disabled: boolean;
-  mode: "demo" | "supabase";
 }) {
   const { pending } = useFormStatus();
 
@@ -33,11 +31,7 @@ function SubmitButton({
       disabled={pending || disabled}
       className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {pending
-        ? "Guardando..."
-        : mode === "supabase"
-          ? "Guardar respuesta"
-          : "Probar flujo"}
+      {pending ? "Guardando..." : "Guardar respuesta"}
     </button>
   );
 }
@@ -52,7 +46,6 @@ export function AvailabilityForm({
   matchId,
   matchNotes,
   matchStatus,
-  mode,
   players,
   submissionsOpen,
 }: {
@@ -65,7 +58,6 @@ export function AvailabilityForm({
   matchId: string;
   matchNotes?: string;
   matchStatus: string;
-  mode: "demo" | "supabase";
   players: ClusterPlayer[];
   submissionsOpen: boolean;
 }) {
@@ -192,7 +184,7 @@ export function AvailabilityForm({
               </p>
               <p className="mt-2 text-lg font-extrabold">{selectedOption?.label}</p>
             </div>
-            <SubmitButton disabled={!canEditResponse} mode={mode} />
+            <SubmitButton disabled={!canEditResponse} />
           </div>
 
           {!submissionsOpen && lateDropAllowed ? (
@@ -270,15 +262,6 @@ export function AvailabilityForm({
             </div>
           </div>
 
-          <p>
-            Esta pantalla ya toma el jugador autenticado y guarda la respuesta sobre esa
-            identidad. El selector libre queda solo como fallback de desarrollo.
-          </p>
-          <p>
-            {mode === "supabase"
-              ? "Esta instancia ya esta lista para guardar respuestas en la base y refrescar el tablero."
-              : "Ahora mismo sigue en modo demo. La persistencia queda activada apenas carguemos las variables publicas de Supabase."}
-          </p>
           {matchNotes ? (
             <div className="rounded-[1.2rem] border border-white/10 bg-white/6 px-4 py-3">
               <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">

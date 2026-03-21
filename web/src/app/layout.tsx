@@ -14,9 +14,9 @@ const bodyFont = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Football Tracker MVP",
+  title: "Football Tracker",
   description:
-    "MVP para gestionar asistencia, equipos, resultados e historial de futbol amateur semanal.",
+    "Gestion de asistencia, equipos, resultados e historial para el futbol amateur semanal.",
 };
 
 export default function RootLayout({
