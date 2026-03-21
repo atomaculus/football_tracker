@@ -29,30 +29,22 @@ export function AppShell({
     <main className="grain min-h-screen px-4 py-5 sm:px-6 lg:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         <header className="hero-shell card-shadow overflow-hidden rounded-[2.4rem] border border-white/20 bg-[linear-gradient(180deg,rgba(250,253,248,0.86),rgba(236,243,235,0.8))]">
-          <div className="grid gap-6 p-6 lg:grid-cols-[1.15fr_0.85fr] lg:p-8">
-            <div className="relative z-10">
-              <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-muted">
+          <div className="border-b border-white/30 px-6 py-4 lg:px-8">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-muted">
                 <span className="fixture-kicker rounded-full px-3 py-1">
                   Football Tracker
                 </span>
-                <span>2 admins</span>
-                <span>7v7</span>
-                <span>Fallback 6v6</span>
                 {viewer ? (
-                  <span className="rounded-full bg-[#efe7d5] px-3 py-1 text-foreground">
+                  <span className="hidden rounded-full bg-[#efe7d5] px-3 py-1 text-foreground sm:inline-flex">
                     {viewer.playerName}
                     {viewer.isAdmin ? " · admin" : ""}
                   </span>
                 ) : null}
               </div>
-              <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[0.92] sm:text-6xl">
-                {title}
-              </h1>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
-                {subtitle}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                {filteredNavItems.slice(0, 4).map((item) => (
+
+              <div className="hidden items-center gap-2 lg:flex">
+                {filteredNavItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -61,7 +53,82 @@ export function AppShell({
                     {item.label}
                   </Link>
                 ))}
+                {viewer ? (
+                  <form action={logoutAction}>
+                    <button
+                      type="submit"
+                      className="rounded-full border border-line bg-background/40 px-4 py-2 text-sm font-semibold transition hover:border-foreground"
+                    >
+                      Cerrar sesion
+                    </button>
+                  </form>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="rounded-full border border-line bg-background/40 px-4 py-2 text-sm font-semibold transition hover:border-foreground"
+                  >
+                    Iniciar sesion
+                  </Link>
+                )}
               </div>
+
+              <details className="relative lg:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-center rounded-full border border-line bg-white/70 px-4 py-2 text-sm font-semibold text-foreground transition hover:border-foreground">
+                  Menu
+                </summary>
+                <div className="absolute right-0 top-[calc(100%+0.75rem)] z-20 min-w-56 rounded-[1.4rem] border border-white/30 bg-[rgba(250,252,247,0.94)] p-3 shadow-[0_18px_48px_rgba(15,23,42,0.16)] backdrop-blur">
+                  <div className="flex flex-col gap-2">
+                    {viewer ? (
+                      <div className="rounded-[1rem] border border-line bg-surface-strong px-3 py-3 text-sm font-semibold text-foreground">
+                        {viewer.playerName}
+                        {viewer.isAdmin ? " · admin" : ""}
+                      </div>
+                    ) : null}
+                    {filteredNavItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="rounded-[1rem] border border-line bg-surface-strong px-3 py-3 text-sm font-semibold text-foreground transition hover:border-foreground"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                    {viewer ? (
+                      <form action={logoutAction}>
+                        <button
+                          type="submit"
+                          className="w-full rounded-[1rem] border border-line bg-background/40 px-3 py-3 text-left text-sm font-semibold transition hover:border-foreground"
+                        >
+                          Cerrar sesion
+                        </button>
+                      </form>
+                    ) : (
+                      <Link
+                        href="/login"
+                        className="rounded-[1rem] border border-line bg-background/40 px-3 py-3 text-sm font-semibold transition hover:border-foreground"
+                      >
+                        Iniciar sesion
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div className="grid gap-6 p-6 lg:grid-cols-[1.15fr_0.85fr] lg:p-8">
+            <div className="relative z-10">
+              <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-muted">
+                <span>2 admins</span>
+                <span>7v7</span>
+                <span>Fallback 6v6</span>
+              </div>
+              <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[0.92] sm:text-6xl">
+                {title}
+              </h1>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
+                {subtitle}
+              </p>
             </div>
 
             <div className="relative z-10 grid gap-4">
@@ -71,9 +138,7 @@ export function AppShell({
                     <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted">
                       Proximo partido
                     </p>
-                    <h2 className="mt-2 text-2xl font-extrabold">
-                      {nextMatch.dateLabel}
-                    </h2>
+                    <h2 className="mt-2 text-2xl font-extrabold">{nextMatch.dateLabel}</h2>
                     <p className="mt-2 text-sm text-muted">
                       {nextMatch.timeLabel} · {nextMatch.venue}
                     </p>
@@ -102,43 +167,10 @@ export function AppShell({
                     <p className="mt-1 text-3xl font-black">{nextMatch.missing}</p>
                   </div>
                 </div>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  {viewer ? (
-                    <form action={logoutAction}>
-                      <button
-                        type="submit"
-                        className="rounded-full border border-line bg-background/40 px-4 py-2 text-sm font-semibold transition hover:border-foreground"
-                      >
-                        Cerrar sesion
-                      </button>
-                    </form>
-                  ) : (
-                    <Link
-                      href="/login"
-                      className="rounded-full border border-line bg-background/40 px-4 py-2 text-sm font-semibold transition hover:border-foreground"
-                    >
-                      Iniciar sesion
-                    </Link>
-                  )}
-                </div>
               </div>
             </div>
           </div>
         </header>
-
-        <nav className="card-shadow sticky top-4 z-10 overflow-x-auto rounded-[1.6rem] border border-white/30 bg-[rgba(250,252,247,0.72)] px-3 py-3 backdrop-blur">
-          <div className="flex min-w-max gap-2">
-            {filteredNavItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-full border border-line bg-surface-strong px-4 py-2 text-sm font-semibold text-foreground transition hover:border-foreground"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </nav>
 
         {children}
       </div>
