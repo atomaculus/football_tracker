@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAdminSession } from "@/lib/auth";
-import { buildProjectedAttendanceBoard, type PreviousPlayerInput } from "@/lib/match-selection";
+import {
+  ensureMatchClosureIfNeeded,
+  finalizeMatchClosure,
+  getSignupCutoffDate,
+  syncMatchParticipants,
+  syncLaundryAssignment,
+} from "@/lib/match-operations";
 import { getSupabaseClient, hasSupabaseEnv } from "@/lib/supabase";
 
 export type MatchAdminActionState = {
@@ -26,196 +32,11 @@ export type MatchResultAdminActionState = {
   status: "idle" | "success" | "error" | "demo";
 };
 
-type AttendanceQueryRow = {
-  player_id: string;
-  players: { full_name?: string } | { full_name?: string }[] | null;
-  responded_at: string | null;
-  response: "going" | "backup" | "not_going" | "dropped";
-};
-
 type MatchAdminRow = {
   match_date: string;
   start_time: string | null;
   status: "scheduled" | "open" | "closed" | "played" | "cancelled" | "suspended";
 };
-
-function getSignupCutoffDate(matchDate?: string, startTime?: string | null) {
-  if (!matchDate) {
-    return null;
-  }
-
-  const safeTime =
-    startTime && /^\d{2}:\d{2}(:\d{2})?$/.test(startTime) ? startTime : "21:00:00";
-  const normalizedTime = safeTime.length === 5 ? `${safeTime}:00` : safeTime;
-  const matchStart = new Date(`${matchDate}T${normalizedTime}-03:00`);
-
-  if (Number.isNaN(matchStart.getTime())) {
-    return null;
-  }
-
-  return new Date(matchStart.getTime() - 90 * 60 * 1000);
-}
-
-async function getLatestPlayedRoster(
-  matchId: string,
-): Promise<PreviousPlayerInput[] | null> {
-  const supabase = getSupabaseClient();
-  if (!supabase) {
-    return null;
-  }
-
-  const { data: latestMatch, error: latestMatchError } = await supabase
-    .from("matches")
-    .select("id")
-    .eq("status", "played")
-    .neq("id", matchId)
-    .order("match_date", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (latestMatchError || !latestMatch) {
-    return null;
-  }
-
-  const { data, error } = await supabase
-    .from("match_participants")
-    .select("player_id, role, priority_note, players(full_name)")
-    .eq("match_id", latestMatch.id)
-    .eq("attendance_status", "played");
-
-  if (error || !data) {
-    return null;
-  }
-
-  return data as PreviousPlayerInput[];
-}
-
-async function syncMatchParticipants(matchId: string) {
-  const supabase = getSupabaseClient();
-  if (!supabase) {
-    return { error: true, message: "No se pudo conectar con Supabase." };
-  }
-
-  const [
-    { data: match, error: matchError },
-    { data: responses, error: responsesError },
-    { data: existingParticipants, error: existingParticipantsError },
-    previousRoster,
-  ] =
-    await Promise.all([
-      supabase
-        .from("matches")
-        .select("match_date, start_time, target_players")
-        .eq("id", matchId)
-        .maybeSingle(),
-      supabase
-        .from("availability_responses")
-        .select("response, responded_at, player_id, players(full_name)")
-        .eq("match_id", matchId)
-        .order("responded_at", { ascending: false }),
-      supabase
-        .from("match_participants")
-        .select("player_id, attendance_status, role, priority_note, priority_score, team_id")
-        .eq("match_id", matchId),
-      getLatestPlayedRoster(matchId),
-    ]);
-
-  if (matchError || !match || responsesError || !responses || existingParticipantsError) {
-    return { error: true, message: "No se pudo leer la lista actual para cerrar la convocatoria." };
-  }
-
-  const typedResponses = (responses as AttendanceQueryRow[]).map((item) => ({
-    detail: item.responded_at
-      ? `Respondio ${new Intl.DateTimeFormat("es-AR", {
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          month: "2-digit",
-        }).format(new Date(item.responded_at))}`
-      : "Sin horario",
-    name: Array.isArray(item.players)
-      ? String(item.players[0]?.full_name ?? "Jugador")
-      : String(item.players?.full_name ?? "Jugador"),
-    playerId: item.player_id,
-    responseValue: item.response,
-    status:
-      item.response === "going"
-        ? "Titular"
-        : item.response === "backup"
-          ? "Suplente"
-          : "No va",
-  }));
-
-  const projectedBoard = buildProjectedAttendanceBoard({
-    previousPlayers: previousRoster ?? [],
-    responses: typedResponses,
-    targetPlayers: match.target_players,
-  });
-  const preservedLateCancels = (existingParticipants ?? [])
-    .filter((participant) => participant.attendance_status === "late_cancel")
-    .map((participant) => ({
-      attendance_status: "late_cancel",
-      match_id: matchId,
-      player_id: participant.player_id,
-      priority_note: participant.priority_note,
-      priority_score: participant.priority_score,
-      role: participant.role,
-      team_id: participant.team_id,
-    }));
-  const preservedLateCancelIds = new Set(
-    preservedLateCancels.map((participant) => participant.player_id),
-  );
-
-  const participantRows = projectedBoard.attendanceBoard
-    .filter(
-      (entry) =>
-        entry.playerId &&
-        entry.projectedRole !== "out" &&
-        !preservedLateCancelIds.has(entry.playerId),
-    )
-    .map((entry, index) => ({
-      attendance_status: "confirmed",
-      match_id: matchId,
-      player_id: entry.playerId,
-      priority_note: entry.isPriority
-        ? "Titular prioritario por haber jugado el ultimo martes."
-        : `Orden de anotacion #${index + 1}.`,
-      priority_score: entry.isPriority ? 1000 - index : 100 - index,
-      role: entry.projectedRole === "starter" ? "starter" : "substitute",
-      team_id: null,
-    }));
-
-  const { error: deleteError } = await supabase
-    .from("match_participants")
-    .delete()
-    .eq("match_id", matchId);
-
-  if (deleteError) {
-    return { error: true, message: "No se pudo limpiar la lista previa del partido." };
-  }
-
-  const rowsToInsert = [...participantRows, ...preservedLateCancels];
-
-  if (!rowsToInsert.length) {
-    return {
-      error: false,
-      message: "La convocatoria se cerro, pero no habia jugadores confirmados para consolidar.",
-    };
-  }
-
-  const { error: insertError } = await supabase
-    .from("match_participants")
-    .insert(rowsToInsert);
-
-  if (insertError) {
-    return { error: true, message: "No se pudo consolidar la lista final del partido." };
-  }
-
-  return {
-    error: false,
-    message: `Convocatoria cerrada con ${projectedBoard.projectedStarters} titulares y ${projectedBoard.projectedSubstitutes} suplentes.`,
-  };
-}
 
 async function markLateCancelParticipant(matchId: string, playerId: string) {
   const supabase = getSupabaseClient();
@@ -328,7 +149,7 @@ export async function updateMatchStatus(
   }
 
   if (status === "closed") {
-    const syncResult = await syncMatchParticipants(matchId);
+    const syncResult = await finalizeMatchClosure(supabase, matchId);
 
     if (syncResult.error) {
       return {
@@ -452,6 +273,19 @@ export async function updateAttendanceResponseByAdmin(
     };
   }
 
+  if (match.status === "open") {
+    const ensuredMatch = await ensureMatchClosureIfNeeded(supabase, matchId);
+
+    if (ensuredMatch.error || !ensuredMatch.match) {
+      return {
+        message: ensuredMatch.message ?? "No se pudo validar el estado real del partido.",
+        status: "error",
+      };
+    }
+
+    match.status = ensuredMatch.match.status;
+  }
+
   if (match.status === "suspended" || match.status === "cancelled" || match.status === "played") {
     return {
       message: "La lista ya no admite cambios para este partido.",
@@ -522,11 +356,20 @@ export async function updateAttendanceResponseByAdmin(
       };
     }
 
-    const syncResult = await syncMatchParticipants(matchId);
+    const syncResult = await syncMatchParticipants(supabase, matchId);
 
     if (syncResult.error) {
       return {
         message: syncResult.message,
+        status: "error",
+      };
+    }
+
+    const laundryResult = await syncLaundryAssignment(supabase, matchId);
+
+    if (laundryResult.error) {
+      return {
+        message: laundryResult.message,
         status: "error",
       };
     }

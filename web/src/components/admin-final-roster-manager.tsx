@@ -94,14 +94,16 @@ function FinalRosterRow({
           name="attendanceStatus"
           defaultValue={entry.attendanceStatus}
           disabled={!editable || !matchId}
-          className="min-w-[13rem] rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold text-foreground outline-none transition focus:border-foreground disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold text-foreground outline-none transition focus:border-foreground sm:w-auto sm:min-w-[13rem] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <option value="confirmed">Pendiente</option>
           <option value="played">Jugo</option>
           <option value="late_cancel">Baja tardia</option>
           <option value="no_show">No-show</option>
         </select>
-        <SaveButton disabled={!editable || !matchId} />
+        <div className="w-full sm:w-auto">
+          <SaveButton disabled={!editable || !matchId} />
+        </div>
       </div>
 
       {actionState.status !== "idle" ? (

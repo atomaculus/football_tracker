@@ -72,7 +72,7 @@ function AttendanceRow({
           name="response"
           defaultValue={defaultValue}
           disabled={!canEditThisRow || !matchId || !entry.playerId}
-          className="min-w-[12rem] rounded-[1rem] border border-white/12 bg-white/8 px-4 py-3 text-sm font-semibold text-white outline-none transition focus:border-white/40 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-[1rem] border border-white/12 bg-white/8 px-4 py-3 text-sm font-semibold text-white outline-none transition focus:border-white/40 sm:w-auto sm:min-w-[12rem] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {!isLateDropOnlyMode ? (
             <option value="going" className="text-foreground">
@@ -88,7 +88,9 @@ function AttendanceRow({
             No va
           </option>
         </select>
-        <SaveButton disabled={!canEditThisRow || !matchId || !entry.playerId} />
+        <div className="w-full sm:w-auto">
+          <SaveButton disabled={!canEditThisRow || !matchId || !entry.playerId} />
+        </div>
       </div>
 
       {actionState.status !== "idle" ? (

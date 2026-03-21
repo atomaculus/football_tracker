@@ -162,10 +162,10 @@ export const historyMatchesSeed: HistoryMatch[] = [
 ];
 
 export const leaderboardSeed: LeaderboardEntry[] = [
-  { name: "Ruben Mel", presences: 33, goals: 14, diff: "+14" },
-  { name: "Esteban Larre", presences: 7, goals: 4, diff: "+4" },
-  { name: "Fidel", presences: 7, goals: 3, diff: "+1" },
-  { name: "Guido Marani", presences: 3, goals: 2, diff: "+2" },
+  { name: "Ruben Mel", presences: 33, goals: 14, laundryLoads: 3, diff: "+14" },
+  { name: "Esteban Larre", presences: 7, goals: 4, laundryLoads: 1, diff: "+4" },
+  { name: "Fidel", presences: 7, goals: 3, laundryLoads: 2, diff: "+1" },
+  { name: "Guido Marani", presences: 3, goals: 2, laundryLoads: 0, diff: "+2" },
 ];
 
 export const adminActionsSeed: AdminAction[] = [

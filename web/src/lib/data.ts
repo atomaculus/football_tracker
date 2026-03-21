@@ -11,6 +11,11 @@ import {
   teamsSeed,
 } from "@/lib/seed-data";
 import {
+  ensureMatchClosureIfNeeded,
+  getLaundryDutyForMatch,
+  getSignupCutoffDate,
+} from "@/lib/match-operations";
+import {
   buildProjectedAttendanceBoard,
   getPlayerName,
   type PreviousPlayerInput,
@@ -101,28 +106,6 @@ function formatMatchTime(time: string | null) {
   }
 
   return time.slice(0, 5);
-}
-
-function getMatchStartDate(isoDate?: string, isoTime?: string | null) {
-  if (!isoDate) {
-    return null;
-  }
-
-  const safeTime = isoTime && /^\d{2}:\d{2}(:\d{2})?$/.test(isoTime) ? isoTime : "21:00:00";
-  const normalizedTime = safeTime.length === 5 ? `${safeTime}:00` : safeTime;
-  const parsedDate = new Date(`${isoDate}T${normalizedTime}-03:00`);
-
-  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
-}
-
-function getSignupCutoffDate(isoDate?: string, isoTime?: string | null) {
-  const matchStartDate = getMatchStartDate(isoDate, isoTime);
-
-  if (!matchStartDate) {
-    return null;
-  }
-
-  return new Date(matchStartDate.getTime() - 90 * 60 * 1000);
 }
 
 function formatCutoffLabel(cutoffDate: Date | null) {
@@ -381,7 +364,27 @@ async function getUpcomingMatchFromSupabase() {
     return null;
   }
 
-  return data as MatchRow;
+  const typedMatch = data as MatchRow;
+
+  if (typedMatch.status === "open") {
+    const ensuredMatch = await ensureMatchClosureIfNeeded(supabase, typedMatch.id);
+
+    if (!ensuredMatch.error && ensuredMatch.match?.status === "closed") {
+      const { data: refreshedMatch, error: refreshedMatchError } = await supabase
+        .from("matches")
+        .select(
+          "id, match_date, location, start_time, target_players, fallback_players, format_label, status, notes",
+        )
+        .eq("id", typedMatch.id)
+        .maybeSingle();
+
+      if (!refreshedMatchError && refreshedMatch) {
+        return refreshedMatch as MatchRow;
+      }
+    }
+  }
+
+  return typedMatch;
 }
 
 async function getLatestPlayedRoster(currentMatchId?: string) {
@@ -713,7 +716,13 @@ async function getRealLeaderboard() {
     return null;
   }
 
-  const [{ data: playedMatches, error: matchesError }, { data: participants, error: participantsError }, { data: teams, error: teamsError }, { data: goals, error: goalsError }] =
+  const [
+    { data: playedMatches, error: matchesError },
+    { data: participants, error: participantsError },
+    { data: teams, error: teamsError },
+    { data: goals, error: goalsError },
+    { data: laundryAssignments, error: laundryAssignmentsError },
+  ] =
     await Promise.all([
       supabase
         .from("matches")
@@ -727,9 +736,18 @@ async function getRealLeaderboard() {
       supabase
         .from("goals")
         .select("match_id, scorer_player_id, is_own_goal"),
+      supabase
+        .from("laundry_assignments")
+        .select("player_id, players(full_name)"),
     ]);
 
-  if (matchesError || participantsError || teamsError || goalsError) {
+  if (
+    matchesError ||
+    participantsError ||
+    teamsError ||
+    goalsError ||
+    laundryAssignmentsError
+  ) {
     return null;
   }
 
@@ -748,6 +766,20 @@ async function getRealLeaderboard() {
     match_id: string;
     scorer_player_id: string;
   }>).filter((goal) => playedMatchIds.has(goal.match_id));
+  const typedLaundryAssignments = (laundryAssignments ?? []) as Array<{
+    player_id: string;
+    players: { full_name?: string } | { full_name?: string }[] | null;
+  }>;
+  const laundryAssignmentsByPlayer = typedLaundryAssignments.reduce<Map<string, number>>(
+    (accumulator, assignment) => {
+      accumulator.set(
+        assignment.player_id,
+        (accumulator.get(assignment.player_id) ?? 0) + 1,
+      );
+      return accumulator;
+    },
+    new Map(),
+  );
 
   const teamsByMatch = typedTeams.reduce<Map<string, Array<{ goals: number; id: string }>>>(
     (accumulator, team) => {
@@ -765,6 +797,7 @@ async function getRealLeaderboard() {
       diff: number;
       goals: number;
       losses: number;
+      laundryLoads: number;
       name: string;
       presences: number;
       draws: number;
@@ -778,6 +811,7 @@ async function getRealLeaderboard() {
       draws: 0,
       goals: 0,
       losses: 0,
+      laundryLoads: laundryAssignmentsByPlayer.get(participant.player_id) ?? 0,
       name: getPlayerName(participant.players),
       presences: 0,
       wins: 0,
@@ -833,6 +867,23 @@ async function getRealLeaderboard() {
     }
   }
 
+  for (const assignment of typedLaundryAssignments) {
+    if (playerStats.has(assignment.player_id)) {
+      continue;
+    }
+
+    playerStats.set(assignment.player_id, {
+      diff: 0,
+      draws: 0,
+      goals: 0,
+      losses: 0,
+      laundryLoads: laundryAssignmentsByPlayer.get(assignment.player_id) ?? 0,
+      name: getPlayerName(assignment.players),
+      presences: 0,
+      wins: 0,
+    });
+  }
+
   const leaderboard = Array.from(playerStats.values())
     .map((player) => {
       const totalResults = player.wins + player.draws + player.losses;
@@ -845,6 +896,7 @@ async function getRealLeaderboard() {
         diff: player.diff >= 0 ? `+${player.diff}` : `${player.diff}`,
         draws: player.draws,
         goals: player.goals,
+        laundryLoads: player.laundryLoads,
         losses: player.losses,
         name: player.name,
         presences: player.presences,
@@ -873,6 +925,11 @@ export async function getDashboardData(): Promise<DashboardData> {
     ? await getAttendanceForMatch(upcomingMatch.id)
     : null;
   const leaderboard = await getRealLeaderboard();
+  const supabase = getSupabaseClient();
+  const laundryDuty =
+    supabase && upcomingMatch
+      ? await getLaundryDutyForMatch(supabase, upcomingMatch.id, upcomingMatch.status as MatchRow["status"])
+      : null;
 
   return {
     attendanceBoard:
@@ -880,7 +937,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         ? attendanceData.attendanceBoard
         : attendanceBoardSeed,
     leaderboard: leaderboard?.length ? leaderboard : leaderboardSeed,
-    laundryDuty: laundryDutySeed,
+    laundryDuty: laundryDuty ?? laundryDutySeed,
     navItems: navItemsSeed,
     nextMatch: buildNextMatch(upcomingMatch, attendanceData?.counts),
   };
@@ -989,6 +1046,11 @@ export async function getAdminPageData(): Promise<AdminPageData> {
   const currentTeamsAndGoals = upcomingMatch
     ? await getTeamsAndGoalsForMatch(upcomingMatch.id)
     : null;
+  const supabase = getSupabaseClient();
+  const laundryDuty =
+    supabase && upcomingMatch
+      ? await getLaundryDutyForMatch(supabase, upcomingMatch.id, upcomingMatch.status as MatchRow["status"])
+      : null;
   const currentMatch = buildNextMatch(upcomingMatch, attendanceData?.counts);
   const attendanceSummary: AttendanceSummary = attendanceData?.attendanceSummary ?? {
     backups: currentMatch.substitutes,
@@ -1015,7 +1077,7 @@ export async function getAdminPageData(): Promise<AdminPageData> {
     attendanceSummary,
     currentMatch,
     goalEntries: currentTeamsAndGoals?.goalEntries ?? [],
-    laundryDuty: laundryDutySeed,
+    laundryDuty: laundryDuty ?? laundryDutySeed,
     matchTeams: currentTeamsAndGoals?.matchTeams ?? [],
     projectedStarters: projectedBoard.projectedStarters,
     projectedSubstitutes: projectedBoard.projectedSubstitutes,

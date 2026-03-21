@@ -115,6 +115,7 @@ export type LeaderboardEntry = {
   name: string;
   presences: number;
   goals: number;
+  laundryLoads?: number;
   diff: string;
   draws?: number;
   losses?: number;

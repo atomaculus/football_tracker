@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireViewerSession } from "@/lib/auth";
+import { ensureMatchClosureIfNeeded, getSignupCutoffDate } from "@/lib/match-operations";
 import { getSupabaseClient, hasSupabaseEnv } from "@/lib/supabase";
 
 export type AvailabilityActionState = {
@@ -15,23 +16,6 @@ type MatchAvailabilityRow = {
   start_time: string | null;
   status: "scheduled" | "open" | "closed" | "played" | "cancelled" | "suspended";
 };
-
-function getSignupCutoffDate(matchDate?: string, startTime?: string | null) {
-  if (!matchDate) {
-    return null;
-  }
-
-  const safeTime =
-    startTime && /^\d{2}:\d{2}(:\d{2})?$/.test(startTime) ? startTime : "21:00:00";
-  const normalizedTime = safeTime.length === 5 ? `${safeTime}:00` : safeTime;
-  const matchStart = new Date(`${matchDate}T${normalizedTime}-03:00`);
-
-  if (Number.isNaN(matchStart.getTime())) {
-    return null;
-  }
-
-  return new Date(matchStart.getTime() - 90 * 60 * 1000);
-}
 
 export async function submitAvailabilityResponse(
   _previousState: AvailabilityActionState,
@@ -76,6 +60,19 @@ export async function submitAvailabilityResponse(
       message: "No se encontro el partido para registrar la respuesta.",
       status: "error",
     };
+  }
+
+  if (match.status === "open") {
+    const ensuredMatch = await ensureMatchClosureIfNeeded(supabase, matchId);
+
+    if (ensuredMatch.error || !ensuredMatch.match) {
+      return {
+        message: ensuredMatch.message ?? "No se pudo validar el estado real del partido.",
+        status: "error",
+      };
+    }
+
+    match.status = ensuredMatch.match.status;
   }
 
   if (match.status === "suspended" || match.status === "cancelled" || match.status === "played") {

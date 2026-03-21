@@ -40,32 +40,36 @@ export default async function HistoryPage() {
         </SectionCard>
 
         <SectionCard eyebrow="Estadisticas" title="Rendimiento acumulado" dark>
-          <div className="overflow-hidden rounded-[1.4rem] border border-white/10">
-            <div className="grid grid-cols-[1.4fr_0.7fr_0.7fr_1fr_0.8fr_0.8fr] bg-white/6 px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white/50">
-              <span>Jugador</span>
-              <span>Jug.</span>
-              <span>Goles</span>
-              <span>G/P/E</span>
-              <span>Exito</span>
-              <span>Dif.</span>
-            </div>
-            {leaderboard.map((player, index) => (
-              <div
-                key={player.name}
-                className="grid grid-cols-[1.4fr_0.7fr_0.7fr_1fr_0.8fr_0.8fr] items-center border-t border-white/10 px-4 py-4 text-sm"
-              >
-                <span className="font-bold text-white">
-                  {index + 1}. {player.name}
-                </span>
-                <span>{player.presences}</span>
-                <span>{player.goals}</span>
-                <span>
-                  {player.wins ?? 0}/{player.losses ?? 0}/{player.draws ?? 0}
-                </span>
-                <span>{player.successRate ?? "0%"}</span>
-                <span className="text-lime">{player.diff}</span>
+          <div className="overflow-x-auto rounded-[1.4rem] border border-white/10">
+            <div className="min-w-[46rem]">
+              <div className="grid grid-cols-[1.4fr_0.7fr_0.7fr_1fr_0.8fr_0.8fr_0.8fr] bg-white/6 px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white/50">
+                <span>Jugador</span>
+                <span>Jug.</span>
+                <span>Goles</span>
+                <span>G/P/E</span>
+                <span>Lav.</span>
+                <span>Exito</span>
+                <span>Dif.</span>
               </div>
-            ))}
+              {leaderboard.map((player, index) => (
+                <div
+                  key={player.name}
+                  className="grid grid-cols-[1.4fr_0.7fr_0.7fr_1fr_0.8fr_0.8fr_0.8fr] items-center border-t border-white/10 px-4 py-4 text-sm"
+                >
+                  <span className="font-bold text-white">
+                    {index + 1}. {player.name}
+                  </span>
+                  <span>{player.presences}</span>
+                  <span>{player.goals}</span>
+                  <span>
+                    {player.wins ?? 0}/{player.losses ?? 0}/{player.draws ?? 0}
+                  </span>
+                  <span>{player.laundryLoads ?? 0}</span>
+                  <span>{player.successRate ?? "0%"}</span>
+                  <span className="text-lime">{player.diff}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </SectionCard>
       </section>

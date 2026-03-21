@@ -14,7 +14,7 @@ const bodyFont = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Football Tracker",
+  title: "La Fecha",
   description:
     "Gestion de asistencia, equipos, resultados e historial para el futbol amateur semanal.",
 };

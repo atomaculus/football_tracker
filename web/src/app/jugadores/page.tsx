@@ -41,7 +41,7 @@ export default async function PlayersPage() {
                         {player.status}
                       </Pill>
                     </div>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                    <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
                       <div className="rounded-[1rem] border border-line bg-background/55 p-3">
                         <p className="text-xs uppercase tracking-[0.18em] text-muted">Jugados</p>
                         <p className="mt-1 text-xl font-black">{stats?.presences ?? 0}</p>
@@ -57,6 +57,10 @@ export default async function PlayersPage() {
                       <div className="rounded-[1rem] border border-line bg-background/55 p-3">
                         <p className="text-xs uppercase tracking-[0.18em] text-muted">Dif.</p>
                         <p className="mt-1 text-xl font-black">{stats?.diff ?? "+0"}</p>
+                      </div>
+                      <div className="rounded-[1rem] border border-line bg-background/55 p-3">
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted">Lavados</p>
+                        <p className="mt-1 text-xl font-black">{stats?.laundryLoads ?? 0}</p>
                       </div>
                     </div>
                   </div>

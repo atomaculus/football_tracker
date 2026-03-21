@@ -25,7 +25,7 @@ function SubmitButton({ disabled, label }: { disabled?: boolean; label: string }
     <button
       type="submit"
       disabled={disabled || pending}
-      className="rounded-full bg-foreground px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-surface-dark disabled:cursor-not-allowed disabled:opacity-60"
+      className="w-full rounded-full bg-foreground px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-surface-dark sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Guardando" : label}
     </button>
@@ -71,18 +71,18 @@ function TeamAssignmentRow({
       <input type="hidden" name="matchId" value={matchId ?? ""} />
       <input type="hidden" name="playerId" value={entry.playerId} />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-extrabold">{entry.name}</p>
           <p className="text-sm text-muted">
             {entry.role === "starter" ? "Titular" : "Suplente"} · {entry.attendanceStatus}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           <select
             name="teamId"
             defaultValue={entry.teamId ?? ""}
-            className="min-w-[12rem] rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold text-foreground outline-none transition focus:border-foreground"
+            className="w-full rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold text-foreground outline-none transition focus:border-foreground sm:min-w-[12rem]"
           >
             <option value="">Sin equipo</option>
             {teams.map((team) => (
@@ -166,7 +166,10 @@ export function AdminMatchResultManager({
         </div>
       ) : (
         <div className="space-y-6">
-          <form action={saveTeamsAction} className="grid gap-4 rounded-[1.5rem] border border-line bg-surface-strong p-5">
+          <form
+            action={saveTeamsAction}
+            className="grid gap-4 rounded-[1.5rem] border border-line bg-surface-strong p-5"
+          >
             <input type="hidden" name="matchId" value={matchId} />
             <input type="hidden" name="teamAId" value={teamA?.id ?? ""} />
             <input type="hidden" name="teamBId" value={teamB?.id ?? ""} />
@@ -229,7 +232,7 @@ export function AdminMatchResultManager({
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-muted">Carga los dos equipos y el marcador final.</p>
               <SubmitButton label="Guardar equipos" />
             </div>
@@ -239,7 +242,9 @@ export function AdminMatchResultManager({
           <div className="grid gap-4 rounded-[1.5rem] border border-line bg-surface-strong p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">Asignacion</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
+                  Asignacion
+                </p>
                 <p className="mt-1 text-lg font-black">Jugadores por equipo</p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -263,7 +268,10 @@ export function AdminMatchResultManager({
             </div>
           </div>
 
-          <form action={addGoalAction} className="grid gap-4 rounded-[1.5rem] border border-line bg-surface-strong p-5">
+          <form
+            action={addGoalAction}
+            className="grid gap-4 rounded-[1.5rem] border border-line bg-surface-strong p-5"
+          >
             <input type="hidden" name="matchId" value={matchId} />
 
             <div>
@@ -300,7 +308,12 @@ export function AdminMatchResultManager({
                 className="rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-foreground"
                 placeholder="Min"
               />
-              <SubmitButton disabled={!teams.length || !playableParticipants.length} label="Cargar gol" />
+              <div className="w-full md:w-auto">
+                <SubmitButton
+                  disabled={!teams.length || !playableParticipants.length}
+                  label="Cargar gol"
+                />
+              </div>
             </div>
 
             <label className="flex items-center gap-3 text-sm font-semibold text-foreground">
@@ -311,7 +324,7 @@ export function AdminMatchResultManager({
           </form>
 
           <div className="grid gap-3">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-lg font-black">Goles cargados</p>
               <Pill>{goalEntries.length} eventos</Pill>
             </div>

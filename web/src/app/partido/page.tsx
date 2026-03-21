@@ -24,7 +24,7 @@ export default async function MatchPage() {
                 key={team.name}
                 className="rounded-[1.6rem] border border-line bg-surface-strong p-5"
               >
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                   <div
                     className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] ${team.color}`}
                   >
@@ -52,7 +52,7 @@ export default async function MatchPage() {
             {scorers.map((scorer) => (
               <div
                 key={`${scorer.name}-${scorer.team}`}
-                className="flex items-center justify-between rounded-[1.4rem] border border-white/10 bg-white/6 px-4 py-4"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-white/10 bg-white/6 px-4 py-4"
               >
                 <div>
                   <p className="font-extrabold">{scorer.name}</p>
