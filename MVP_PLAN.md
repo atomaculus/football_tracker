@@ -1,4 +1,4 @@
-# MVP Futbol Martes
+# MVP La Fecha
 
 ## Objetivo
 
@@ -49,9 +49,13 @@ La V1 web ya tiene una parte importante del flujo implementado:
 - login simple por jugador y codigo compartido
 - confirmacion de asistencia persistida
 - cierre operativo de convocatoria
+- cierre automatico persistido por scheduler
 - bajas tardias despues del cierre
 - panel admin para lista final, asistencia real, equipos y goles
+- asignacion real de camisetas al cerrar convocatoria
 - historial real basico
+- metrica de lavados por jugador
+- home y shell responsive mas pulidos
 - fallback local si faltan credenciales o datos
 
 ## Roles
@@ -108,10 +112,11 @@ La V1 web ya tiene una parte importante del flujo implementado:
    - goles
    - diferencia de goles del equipo cuando jugo
    - porcentaje simple de victorias, empates o derrotas
+   - cantidad de veces que cada jugador se llevo camisetas
 
 7. `Logistica de camisetas`
    - asignar quien se lleva las camisetas a lavar
-   - preferencia por turnos entre quienes jugaron
+   - preferencia por turnos entre quienes jugaron o quedaron en la lista final
    - posibilidad de override admin si el asignado no puede
    - recordar que hay dos juegos: crema y negras con naranja
 
@@ -132,6 +137,7 @@ Conviene automatizar solo lo que no agregue demasiada complejidad:
 - alerta o suspension cuando hay menos de `12`
 - bloqueo de nuevas altas despues del cierre
 - permiso de baja tardia despues del cierre
+- asignacion de camisetas al cerrarse la convocatoria
 
 ## Reglas que dejaria manuales o semi-manuales
 
@@ -139,7 +145,7 @@ Conviene automatizar solo lo que no agregue demasiada complejidad:
 - excepciones informales entre amigos
 - prioridad especial de arqueros si no esta del todo definida
 - suplentes que entran por consenso
-- automatizacion completa del flujo de camisetas
+- devolucion y override fino del flujo de camisetas
 
 Estas reglas pueden vivir como override de admin para no trabar el MVP.
 
@@ -148,12 +154,12 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
 1. El admin deja abierta la convocatoria del martes.
 2. Los jugadores responden si van o no van.
 3. El sistema cierra nuevas altas `90 minutos` antes del partido.
-4. El admin arma la lista final y puede registrar bajas tardias.
-5. Si no se llega a 12 jugadores o el clima obliga a frenarlo, la fecha se marca como suspendida.
-6. Se cargan equipos.
-7. Despues del partido se registra resultado y goles.
-8. La app actualiza historial y estadisticas.
-9. La app deja visible quien se lleva las camisetas, aunque esa automatizacion todavia no esta cerrada end to end.
+4. El sistema consolida lista final y asigna camisetas al cerrarse la convocatoria.
+5. El admin puede registrar bajas tardias si hace falta.
+6. Si no se llega a 12 jugadores o el clima obliga a frenarlo, la fecha se marca como suspendida.
+7. Se cargan equipos.
+8. Despues del partido se registra resultado y goles.
+9. La app actualiza historial y estadisticas.
 
 ## Pantallas MVP
 
@@ -166,6 +172,7 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
    - proximo partido
    - estado de convocatoria
    - CTA para confirmar asistencia
+   - teaser del ranking
 
 3. `Confirmar asistencia`
    - voy
@@ -189,11 +196,13 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
 6. `Historial`
    - partidos anteriores
    - detalle por fecha
+   - ranking acumulado
 
 7. `Jugadores`
    - lista completa del grupo
    - estado de cada jugador
    - admins visibles
+   - metricas visibles, incluyendo `lavados`
 
 8. `Admin`
    - cerrar convocatoria
@@ -202,7 +211,7 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
    - cargar equipos
    - cargar resultado y goles
    - suspender fecha por clima o por no llegar al minimo
-   - asignar o reasignar encargado de camisetas
+   - ver estado de camisetas
 
 ## Features adicionales recomendadas para MVP+
 
@@ -239,10 +248,12 @@ No las pondria en la primera entrega, pero si las dejaria disenadas:
 - convocatoria
 - lista final
 - cierre operativo
+- cierre automatico persistido
 - resultado
 - goles
 - historial
 - estadisticas basicas
+- asignacion de camisetas
 
 ### V2
 

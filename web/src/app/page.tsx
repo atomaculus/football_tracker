@@ -130,22 +130,12 @@ export default async function Home() {
                     </p>
                     <p className="mt-2 text-2xl font-black">{player.name}</p>
                   </div>
-                  <Pill tone={index === 0 ? "lime" : "default"}>{player.successRate ?? "0%"}</Pill>
+                  <Pill tone={index === 0 ? "lime" : "default"}>{index === 0 ? "On fire" : "Top"}</Pill>
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-3">
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted">Jugados</p>
-                    <p className="mt-2 text-2xl font-black">{player.presences}</p>
-                  </div>
-                  <div className="rounded-[1.2rem] border border-[#d96d2d]/12 bg-[#f4ddcf] p-3">
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted">Goles</p>
-                    <p className="mt-2 text-2xl font-black">{player.goals}</p>
-                  </div>
-                  <div className="rounded-[1.2rem] border border-line bg-background/70 p-3">
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted">Dif.</p>
-                    <p className="mt-2 text-2xl font-black text-accent-strong">{player.diff}</p>
-                  </div>
+                <div className="mt-5 rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted">Jugados</p>
+                  <p className="mt-2 text-3xl font-black">{player.presences}</p>
                 </div>
               </div>
             ))}

@@ -1,25 +1,30 @@
-# Football Tracker
+# La Fecha
 
 App web para operar los partidos de futbol de los martes sin depender del Excel como herramienta principal.
 
-El proyecto nacio para reemplazar `Futbol Martes.xlsx` y hoy ya cubre el flujo base del MVP con datos reales en Supabase y deploy en Vercel.
+El proyecto nacio para reemplazar `Futbol Martes.xlsx` y hoy ya cubre el flujo base del MVP con datos reales en Supabase, deploy en Vercel y scheduler externo para cierres automaticos.
 
 ## Estado actual
 
 Hoy el proyecto ya tiene:
 
 - app web en `Next.js 16`
+- branding visible de `La Fecha`
 - deploy realizado en `Vercel`
 - base real en `Supabase`
 - login simple por cookie firmada
 - permisos admin reales
 - confirmacion de asistencia persistida
 - lista proyectada con prioridad del ultimo martes jugado
-- cierre automatico de convocatoria `90 minutos` antes
+- cierre automatico operativo `90 minutos` antes
+- cierre persistido por scheduler y endpoint protegido
 - bajas tardias permitidas despues del cierre
 - cierre real del partido desde admin
 - carga de equipos, resultado y goles desde admin
+- asignacion real de camisetas al cerrar la convocatoria
 - historial real y ranking real basico
+- metrica de `lavados` por jugador
+- home y layouts mas compactos y responsive
 - fallback a seed local cuando faltan datos
 
 ## Reglas operativas ya modeladas
@@ -32,6 +37,7 @@ Hoy el proyecto ya tiene:
 - el ultimo martes jugado da prioridad para la fecha siguiente
 - la convocatoria cierra automaticamente `90 minutos` antes del partido
 - despues del cierre se permiten solo bajas tardias, no nuevas altas
+- al cerrarse la lista se asigna el encargado de camisetas entre quienes efectivamente quedaron en la lista final
 
 ## Auth simple actual
 
@@ -69,11 +75,21 @@ Admins reales cargados hoy:
 - carga goles
 - marca el partido como `played`
 
+## Automatizacion actual
+
+- `GitHub Actions` ejecuta el workflow `Close Signups`
+- el workflow llama a `/api/cron/close-signups`
+- la ruta esta protegida con `CRON_SECRET`
+- al detectar que paso el cutoff, el sistema:
+  - cierra el partido
+  - consolida `match_participants`
+  - asigna camisetas por `rotation`
+
 ## Que sigue siendo parcial o mejorable
 
 - `/partido` cae al mock si un partido jugado no tiene `teams` y `goals` reales cargados
-- el panel admin funciona, pero quedo largo para operacion semanal y conviene compactarlo
-- la logistica real de camisetas todavia no esta automatizada end to end
+- el panel admin ya mejoro, pero sigue siendo el area con mas friccion potencial
+- la logistica de camisetas ahora si se asigna real, pero todavia no tiene panel propio de devolucion o override fino
 - la auth es suficiente para MVP, pero no es la version final tipo OTP o magic link
 - parte de las estadisticas reales dependen de que el partido jugado tenga equipos y goles cargados
 
@@ -85,11 +101,13 @@ Admins reales cargados hoy:
 - `Tailwind CSS 4`
 - `Supabase JS`
 - `Vercel`
+- `GitHub Actions`
 
 ## Estructura
 
 - `web/`: app frontend
 - `supabase/`: schema, seed y archivos auxiliares
+- `.github/workflows/`: jobs programados
 - `MVP_PLAN.md`: alcance funcional del MVP web
 - `TECH_ROADMAP.md`: roadmap tecnico actualizado desde el MVP web actual
 - `PROJECT_STATUS.md`: continuidad y estado consolidado del proyecto
@@ -106,6 +124,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 APP_GROUP_ACCESS_CODE=
 APP_ADMIN_ACCESS_CODE=
 APP_SESSION_SECRET=
+CRON_SECRET=
 ```
 
 ## Desarrollo local
@@ -123,25 +142,22 @@ Abrir `http://localhost:3000`
 
 - `web/src/lib/data.ts`
 - `web/src/lib/auth.ts`
+- `web/src/lib/match-operations.ts`
 - `web/src/app/login/actions.ts`
 - `web/src/app/confirmar/actions.ts`
 - `web/src/app/admin/actions.ts`
 - `web/src/app/admin/page.tsx`
-- `web/src/components/admin-final-roster-manager.tsx`
+- `web/src/app/api/cron/close-signups/route.ts`
 - `web/src/components/admin-match-result-manager.tsx`
+- `web/src/components/app-shell.tsx`
 - `web/src/types/domain.ts`
+- `.github/workflows/close-signups.yml`
 - `supabase/schema.sql`
 
 ## Commits recientes importantes
 
-- `39ac895` Add simple auth and admin session gating
-- `c554a90` Refresh matchday UI and visible player stats
-- `7241754` Build real history and leaderboard stats
-- `199597c` Add admin teams and scoring workflow
-- `92d506b` Add admin match closure workflow
-- `c5d28e7` Allow late drops after signup close
-- `061d004` Require login across app pages
-- `0b33251` Remove test-stage messaging from public UI
+- `ebd2a0e` Refine app UX and automate match closure flow
+- `f2111e0` Fix match closure typing for production build
 - `db6ea61` Simplify app navigation shell
 
 ## Nota importante sobre estadisticas
@@ -162,8 +178,8 @@ En ese caso:
 
 No es backend critico, sino operacion y pulido:
 
-1. usar el MVP en el proximo martes real
-2. detectar friccion concreta del panel admin
-3. compactar UX del admin
-4. terminar la logistica de camisetas
+1. compactar y simplificar mejor el panel admin
+2. cerrar friccion responsive fina despues de uso real
+3. mejorar `/partido` cuando falten datos reales
+4. agregar override y devolucion de camisetas
 5. si hace falta, pasar de auth simple a OTP

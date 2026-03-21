@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Proyecto: `Football Tracker`
+Proyecto: `La Fecha`
 
 Objetivo vigente: operar el futbol de los martes desde una app web real, dejando el Excel como referencia historica y no como herramienta principal de operacion.
 
@@ -22,6 +22,7 @@ Raiz del proyecto:
 - `PROJECT_STATUS.md`
 - `MVP_PLAN.md`
 - `TECH_ROADMAP.md`
+- `.github/`
 - `Futbol Martes.xlsx`
 - `Futbol Martes (version 1).xlsx`
 - `supabase/`
@@ -31,6 +32,7 @@ Subdirectorios principales:
 
 - `web/`: app Next.js 16 del MVP operativo
 - `supabase/`: schema, seed y archivos auxiliares
+- `.github/workflows/`: scheduler del cierre automatico
 
 Estado git al actualizar este archivo:
 
@@ -51,9 +53,11 @@ Rutas disponibles:
 - `/historial`
 - `/jugadores`
 - `/admin`
+- `/api/cron/close-signups`
 
 Capacidades actuales:
 
+- branding visible `La Fecha`
 - login simple por jugador y codigo de acceso
 - gating real de sesion para vistas privadas
 - home responsive del MVP
@@ -64,8 +68,11 @@ Capacidades actuales:
 - lista de jugadores del grupo
 - panel admin operativo
 - cierre real de convocatoria
+- cierre automatico por scheduler
 - carga de asistencia real del partido
 - carga de equipos, resultado y goles
+- asignacion real de camisetas al cerrar convocatoria
+- estadistica de `lavados` por jugador
 - capa de datos conectada a Supabase
 - fallback local con seed data si faltan credenciales o datos
 
@@ -86,8 +93,7 @@ Capacidades actuales:
 - hay dos juegos de camisetas:
   - crema / beige
   - negras con naranja
-- la logistica de camisetas se quiere resolver dentro de la app
-- recomendacion actual: asignacion de camisetas por `rotation`, no `random`
+- la logistica de camisetas se resuelve por `rotation` al cerrar la lista
 
 ## Acciones tomadas hasta ahora
 
@@ -107,9 +113,9 @@ Frontend:
 - se incorporo login simple con sesiones
 - se corrigieron detalles de contraste y navegacion
 - se simplifico la shell de navegacion
-- se agrego la vista `Jugadores`
-- se compactaron textos de interfaz publica
-- se mantuvo fallback visual razonable cuando faltan datos reales
+- se convirtio la barra superior en navegacion sticky compacta
+- se compactaron textos y bloques del home
+- se reforzo responsive en home, historial, jugadores, partido y admin
 
 Datos y backend:
 
@@ -122,23 +128,18 @@ Datos y backend:
 - se agrego al schema la tabla `laundry_assignments`
 - se habilito cierre de convocatoria y operacion admin real
 - se habilito carga de equipos y goles
+- se implemento cierre automatico persistido y asignacion real de camisetas
 
-Git / repo:
+Infra:
 
-- repo inicializado y conectado al remoto de GitHub
-- commits locales y push realizados de forma incremental
+- se agrego workflow `Close Signups` en GitHub Actions
+- se agrego endpoint protegido por `CRON_SECRET`
+- se valido ejecucion manual del workflow
 
 ## Commits relevantes
 
-- `39ac895` Add simple auth and admin session gating
-- `c554a90` Refresh matchday UI and visible player stats
-- `7241754` Build real history and leaderboard stats
-- `199597c` Add admin teams and scoring workflow
-- `92d506b` Add admin match closure workflow
-- `c5d28e7` Allow late drops after signup close
-- `7d6b891` Refresh README with deployed MVP status
-- `061d004` Require login across app pages
-- `0b33251` Remove test-stage messaging from public UI
+- `ebd2a0e` Refine app UX and automate match closure flow
+- `f2111e0` Fix match closure typing for production build
 - `db6ea61` Simplify app navigation shell
 
 ## Archivos clave para retomar
@@ -159,9 +160,16 @@ Frontend:
 - `web/src/app/partido/page.tsx`
 - `web/src/app/jugadores/page.tsx`
 - `web/src/app/historial/page.tsx`
+- `web/src/components/app-shell.tsx`
 - `web/src/lib/data.ts`
 - `web/src/lib/auth.ts`
+- `web/src/lib/match-operations.ts`
 - `web/src/types/domain.ts`
+
+Infra:
+
+- `.github/workflows/close-signups.yml`
+- `web/src/app/api/cron/close-signups/route.ts`
 
 Backend / datos:
 
@@ -196,6 +204,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 APP_GROUP_ACCESS_CODE=
 APP_ADMIN_ACCESS_CODE=
 APP_SESSION_SECRET=
+CRON_SECRET=
 ```
 
 Sin esas variables:
@@ -219,16 +228,19 @@ Lo que ya funciona con datos reales:
 - lectura del proximo `match`
 - lectura de respuestas de asistencia
 - submit de confirmacion de asistencia
-- cierre de convocatoria
+- cierre manual de convocatoria
+- cierre automatico disparado por scheduler
 - carga de participantes reales
 - carga de equipos
 - carga de goles
+- asignacion real de camisetas
 - historial y ranking basico
+- metrica de lavados por jugador
 
 Lo que sigue parcial o con fallback:
 
 - `/partido` cuando falta estructura real de `teams` o `goals`
-- automatizacion end to end de camisetas
+- devolucion y override fino de camisetas
 - algunas estadisticas finas atadas a datos historicos mas completos
 - auth final por OTP o magic link
 
@@ -237,24 +249,25 @@ Lo que sigue parcial o con fallback:
 Orden recomendado para seguir sin perder foco:
 
 1. compactar UX del panel admin para operacion semanal
-2. revisar bugs visibles en `/partido`, `/historial` y `/jugadores`
-3. reducir dependencias de fallback mock donde ya hay datos reales
-4. terminar la logistica real de camisetas
+2. revisar bugs visibles y friccion del admin en uso real
+3. mejorar `/partido` cuando falten datos reales
+4. completar el flujo de camisetas con devolucion y overrides
 5. evaluar si conviene subir la auth del MVP a OTP despues del uso real
 
 ## Consideraciones importantes para otra instancia
 
 - el usuario habla en espanol
 - el proyecto esta en Windows / PowerShell
+- la marca visible actual es `La Fecha`
 - evitar asumir que el historico del Excel se importa ahora
 - no volver a introducir el estado visible `Invitable` para jugadores del grupo base
 - no modelar formatos desbalanceados tipo `7 vs 5`
 - mantener la regla operativa `14 => 7v7`, `12 => 6v6`, `<12 => suspendido`
-- la funcionalidad de camisetas ya no es idea futura: ya esta incorporada al MVP aunque incompleta
+- la asignacion de camisetas ya no es demo: se persiste en `laundry_assignments`
 - si aparece un lock de `.next/dev/lock`, probablemente haya quedado un `next dev` viejo corriendo
 
 ## Ultimo hito conocido
 
 Ultimo commit visible al actualizar este archivo:
 
-- `db6ea61` `Simplify app navigation shell`
+- `f2111e0` `Fix match closure typing for production build`

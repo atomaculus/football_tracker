@@ -2,7 +2,7 @@
 
 ## Objetivo actual
 
-La base real del proyecto ya no es una app mobile desde cero. El producto vigente es un MVP web operativo pensado para resolver la operacion semanal del grupo de futbol con salida rapida, datos reales y admin usable.
+La base real del proyecto es `La Fecha`, un MVP web operativo pensado para resolver la operacion semanal del grupo de futbol con salida rapida, datos reales y admin usable.
 
 La estrategia recomendada hoy es:
 
@@ -21,6 +21,7 @@ Para el estado presente del proyecto recomiendo mantener:
 - `Supabase`
 - `Tailwind CSS 4`
 - `Vercel`
+- `GitHub Actions`
 
 ### Motivo
 
@@ -28,6 +29,7 @@ Para el estado presente del proyecto recomiendo mantener:
 - el deploy y la base ya estan operativos
 - permite iterar muy rapido sobre UX del martes real
 - reduce costo y riesgo frente a reabrir una migracion a mobile
+- el scheduler externo resuelve automatizaciones sin atarse al plan de Vercel
 - deja abierta una futura salida PWA o mobile mas adelante
 
 ## Arquitectura actual
@@ -37,6 +39,7 @@ Para el estado presente del proyecto recomiendo mantener:
 - app web en `Next.js App Router`
 - pantallas server-first con componentes cliente donde hace falta interaccion
 - shell comun de navegacion y layout
+- navegacion sticky compacta
 - formularios y server actions para operaciones de login y admin
 
 ### Backend
@@ -45,6 +48,13 @@ Para el estado presente del proyecto recomiendo mantener:
 - cliente web con `@supabase/supabase-js`
 - sesiones simples por cookie firmada en el MVP
 - logica sensible y validaciones operativas centralizadas en acciones y capa de datos
+
+### Automatizacion
+
+- workflow `Close Signups` en GitHub Actions
+- endpoint `/api/cron/close-signups`
+- proteccion por `CRON_SECRET`
+- cierre persistido de partidos abiertos cuando vence el cutoff
 
 ## Modelo de datos actual
 
@@ -144,14 +154,6 @@ Para el estado presente del proyecto recomiendo mantener:
 - `kit_notes`
 - `created_at`
 
-### `rules`
-
-- `id`
-- `code`
-- `title`
-- `description`
-- `is_active`
-
 ## Reglas de negocio ya modeladas
 
 - un jugador solo puede responder una vez por partido
@@ -164,10 +166,12 @@ Para el estado presente del proyecto recomiendo mantener:
 - despues del cierre se permiten solo bajas tardias
 - los jugadores posteriores al cupo ideal quedan como suplentes
 - el ultimo martes jugado puede influir en la prioridad de la fecha siguiente
+- al cerrarse la convocatoria se consolidan participantes y se asignan camisetas
 
 ## Reglas que siguen manuales o parciales
 
-- automatizacion completa del encargado de camisetas
+- devolucion de camisetas
+- overrides finos de camisetas
 - excepciones sociales entre jugadores
 - posibles reglas especiales de arquero
 - casos de historico viejo del Excel
@@ -207,14 +211,14 @@ La recomendacion sigue siendo no importar todo perfecto al inicio.
 - compactar UX del admin
 - corregir bugs de partido, historial y jugadores
 - reducir fallbacks mock innecesarios
-- terminar flujo real de camisetas
+- reforzar responsive fino despues de uso real
 
 ### Fase 2
 
 - endurecer validaciones admin
 - mejorar estadisticas reales
 - cubrir mejor partidos jugados incompletos
-- pulir experiencia responsive
+- cerrar flujo de camisetas con devolucion y override
 
 ### Fase 3
 
@@ -234,8 +238,8 @@ Siguiente sprint de construccion:
 - alinear UX del panel admin con operacion semanal real
 - revisar estados de cierre y bajas tardias
 - corregir inconsistencias de datos entre home, partido e historial
-- mejorar legibilidad y densidad de informacion en mobile
-- cerrar huecos documentales y de fallback
+- seguir puliendo legibilidad y densidad de informacion en mobile
+- cerrar huecos operativos de camisetas
 
 ## Riesgos actuales
 
@@ -249,4 +253,4 @@ Siguiente sprint de construccion:
 1. Mantener la estrategia web-first hasta estabilizar uso real.
 2. Priorizar bugs y UX operativa sobre nuevas features grandes.
 3. Dejar OTP como mejora posterior, no como bloqueo actual.
-4. Usar el Excel solo como apoyo historico mientras el sistema nuevo gana datos propios.
+4. Usar GitHub Actions para cierres automaticos sin depender del plan de Vercel.
