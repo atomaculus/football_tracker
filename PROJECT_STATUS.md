@@ -4,13 +4,13 @@
 
 Proyecto: `Football Tracker`
 
-Objetivo: reemplazar el Excel usado para organizar los partidos de futbol de los martes por una app, arrancando con un MVP web y luego llevando la operacion a mobile/Android.
+Objetivo vigente: operar el futbol de los martes desde una app web real, dejando el Excel como referencia historica y no como herramienta principal de operacion.
 
 Repositorio remoto:
 
 - `https://github.com/atomaculus/football_tracker.git`
 
-Branch actual esperada:
+Branch actual:
 
 - `main`
 
@@ -23,27 +23,29 @@ Raiz del proyecto:
 - `MVP_PLAN.md`
 - `TECH_ROADMAP.md`
 - `Futbol Martes.xlsx`
+- `Futbol Martes (version 1).xlsx`
 - `supabase/`
 - `web/`
 
 Subdirectorios principales:
 
-- `web/`: app Next.js 16 del MVP
-- `supabase/`: schema y archivos de seed/template
+- `web/`: app Next.js 16 del MVP operativo
+- `supabase/`: schema, seed y archivos auxiliares
 
-Estado git al momento de crear este archivo:
+Estado git al actualizar este archivo:
 
-- repo inicializado
-- remoto `origin` configurado a GitHub por HTTPS
-- cambios empujados al remoto
+- repo limpio
+- remoto `origin` configurado
+- cambios recientes ya empujados al remoto
 
 ## Estado funcional actual
 
-La app web ya existe y se puede correr localmente.
+La app web ya existe, se puede correr localmente y tiene flujo real conectado a Supabase.
 
 Rutas disponibles:
 
 - `/`
+- `/login`
 - `/confirmar`
 - `/partido`
 - `/historial`
@@ -52,16 +54,20 @@ Rutas disponibles:
 
 Capacidades actuales:
 
+- login simple por jugador y codigo de acceso
+- gating real de sesion para vistas privadas
 - home responsive del MVP
-- pantalla de confirmacion de asistencia
+- confirmacion de asistencia persistida
+- bajas tardias despues del cierre
 - pantalla de partido
-- historial mock
+- historial real basico
 - lista de jugadores del grupo
-- panel admin mock
-- feature de encargado de camisetas
-- capa de datos preparada para Supabase
-- conexion real a Supabase ya configurada en esta maquina
-- fallback local con seed data si no hay credenciales
+- panel admin operativo
+- cierre real de convocatoria
+- carga de asistencia real del partido
+- carga de equipos, resultado y goles
+- capa de datos conectada a Supabase
+- fallback local con seed data si faltan credenciales o datos
 
 ## Decisiones de producto ya definidas
 
@@ -69,12 +75,13 @@ Capacidades actuales:
 - fallback valido: `6v6`
 - cantidad ideal: `14 jugadores`
 - minimo para jugar: `12 jugadores`
-- si hay menos de `12`, la fecha deberia quedar `Suspendida`, salvo override manual
+- si hay menos de `12`, la fecha queda en riesgo o suspendida, salvo override manual
 - no tiene sentido modelar partidos desbalanceados tipo `7 vs 5`
 - no se va a importar el historico completo del Excel por ahora
-- prioridad actual: jugadores reales + operacion semanal real
-- login futuro previsto: telefono / OTP
-- hay `2 admins`
+- prioridad actual: operacion semanal real con jugadores reales
+- login final previsto a futuro: telefono / OTP o magic link
+- auth MVP actual: codigo grupal + cookie firmada
+- hay `3 admins` visibles en el sistema actual
 - los jugadores deben poder confirmar asistencia por su cuenta
 - hay dos juegos de camisetas:
   - crema / beige
@@ -89,19 +96,20 @@ Producto y planning:
 - se relevo el Excel para entender el flujo base
 - se definio el alcance funcional del MVP
 - se documento el roadmap tecnico
-- se incorporo al plan el estado `Suspendido`
+- se incorporo al plan el estado `suspended`
 - se incorporo al plan la logistica de camisetas
-- se dejo anotada la invitacion por QR/link como feature futura
+- se adopto una estrategia web-first para salir rapido
 
 Frontend:
 
 - se creo una app web con Next.js
-- se diseno una landing/home inicial del MVP
 - se agregaron pantallas navegables reales del prototipo
-- se corrigieron detalles de contraste y botones de frontend
+- se incorporo login simple con sesiones
+- se corrigieron detalles de contraste y navegacion
+- se simplifico la shell de navegacion
 - se agrego la vista `Jugadores`
-- se agrego la vista de `Encargado de camisetas` en `Inicio` y `Admin`
-- se corrigieron errores de server actions de Next.js
+- se compactaron textos de interfaz publica
+- se mantuvo fallback visual razonable cuando faltan datos reales
 
 Datos y backend:
 
@@ -109,14 +117,11 @@ Datos y backend:
 - se creo `supabase/schema.sql`
 - se creo `supabase/seed_players.sql`
 - se creo `supabase/players_template.csv`
-- se dejo lista la pantalla de confirmacion para persistir en `availability_responses`
-- se dejo lista la lectura de `players` y `matches` desde Supabase si existen credenciales
+- se conecto la lectura de `players`, `matches` y respuestas reales
+- se conecto la persistencia de `availability_responses`
 - se agrego al schema la tabla `laundry_assignments`
-- se creo proyecto real de Supabase
-- se corrio `supabase/schema.sql`
-- se cargaron 12 jugadores iniciales en `players`
-- se creo la temporada `2026`
-- se creo un partido real `open` para el martes `2026-03-24` en `Backyard` a las `21:00`
+- se habilito cierre de convocatoria y operacion admin real
+- se habilito carga de equipos y goles
 
 Git / repo:
 
@@ -125,16 +130,16 @@ Git / repo:
 
 ## Commits relevantes
 
-- `47ddae1` Bootstrap web MVP base
-- `3754c6b` Add navigable MVP screens
-- `d8b75a1` Refine MVP UX and add players view
-- `a391b3b` Add schema and player seed template
-- `312d880` Prepare web app for Supabase data layer
-- `44516b8` Document project status and setup
-- `6519107` Wire availability flow and Supabase-ready dashboard
-- `b7b6802` Fix confirm action export for Next server actions
-- `1d286cf` Align MVP rules with real match formats
-- `7c43870` Add jersey laundry duty MVP flow
+- `39ac895` Add simple auth and admin session gating
+- `c554a90` Refresh matchday UI and visible player stats
+- `7241754` Build real history and leaderboard stats
+- `199597c` Add admin teams and scoring workflow
+- `92d506b` Add admin match closure workflow
+- `c5d28e7` Allow late drops after signup close
+- `7d6b891` Refresh README with deployed MVP status
+- `061d004` Require login across app pages
+- `0b33251` Remove test-stage messaging from public UI
+- `db6ea61` Simplify app navigation shell
 
 ## Archivos clave para retomar
 
@@ -148,13 +153,14 @@ Documentacion:
 Frontend:
 
 - `web/src/app/page.tsx`
+- `web/src/app/login/page.tsx`
 - `web/src/app/confirmar/page.tsx`
-- `web/src/app/confirmar/actions.ts`
 - `web/src/app/admin/page.tsx`
+- `web/src/app/partido/page.tsx`
 - `web/src/app/jugadores/page.tsx`
+- `web/src/app/historial/page.tsx`
 - `web/src/lib/data.ts`
-- `web/src/lib/seed-data.ts`
-- `web/src/lib/supabase.ts`
+- `web/src/lib/auth.ts`
 - `web/src/types/domain.ts`
 
 Backend / datos:
@@ -187,6 +193,9 @@ Variables previstas:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+APP_GROUP_ACCESS_CODE=
+APP_ADMIN_ACCESS_CODE=
+APP_SESSION_SECRET=
 ```
 
 Sin esas variables:
@@ -203,60 +212,35 @@ Ese archivo no se sube a git.
 
 ## Estado tecnico exacto hoy
 
-Lo que ya funciona con datos mock:
+Lo que ya funciona con datos reales:
 
-- navegacion
-- historial demo
-- encargado de camisetas demo
-
-Lo que ya esta preparado para datos reales:
-
+- login y sesion
 - lectura de `players`
 - lectura del proximo `match`
 - lectura de respuestas de asistencia
 - submit de confirmacion de asistencia
+- cierre de convocatoria
+- carga de participantes reales
+- carga de equipos
+- carga de goles
+- historial y ranking basico
 
-Lo que ya quedo conectado de verdad en Supabase:
+Lo que sigue parcial o con fallback:
 
-- `players`
-- `seasons`
-- `matches`
-
-Estado real actual de la base:
-
-- temporada `2026` creada
-- 12 jugadores cargados
-- partido abierto para `2026-03-24`
-
-Lo que todavia no esta conectado end to end:
-
-- login por telefono / OTP
-- admin real para abrir, cerrar o suspender partido
-- asignacion real por turnos del encargado de camisetas
-- equipos reales
-- resultado y goleadores reales
+- `/partido` cuando falta estructura real de `teams` o `goals`
+- automatizacion end to end de camisetas
+- algunas estadisticas finas atadas a datos historicos mas completos
+- auth final por OTP o magic link
 
 ## Siguiente paso recomendado
 
 Orden recomendado para seguir sin perder foco:
 
-1. probar `/jugadores` con datos reales
-2. probar `/confirmar` guardando respuestas reales
-3. probar refresh de `/` y `/admin`
-4. reemplazar el `attendanceBoard` seed por respuestas reales completas
-5. construir panel admin real para abrir / cerrar / suspender fecha
-
-## Bloque siguiente despues de Supabase
-
-Una vez conectado Supabase:
-
-1. panel admin real para abrir / cerrar / suspender partido
-2. validacion de minimo 12 jugadores
-3. asignacion real de camisetas por turnos entre los que jugaron
-4. carga de equipos
-5. carga de resultado
-6. carga de goleadores
-7. historial real
+1. compactar UX del panel admin para operacion semanal
+2. revisar bugs visibles en `/partido`, `/historial` y `/jugadores`
+3. reducir dependencias de fallback mock donde ya hay datos reales
+4. terminar la logistica real de camisetas
+5. evaluar si conviene subir la auth del MVP a OTP despues del uso real
 
 ## Consideraciones importantes para otra instancia
 
@@ -266,25 +250,11 @@ Una vez conectado Supabase:
 - no volver a introducir el estado visible `Invitable` para jugadores del grupo base
 - no modelar formatos desbalanceados tipo `7 vs 5`
 - mantener la regla operativa `14 => 7v7`, `12 => 6v6`, `<12 => suspendido`
-- la funcionalidad de camisetas ya no es idea futura: ya esta incorporada al MVP
+- la funcionalidad de camisetas ya no es idea futura: ya esta incorporada al MVP aunque incompleta
 - si aparece un lock de `.next/dev/lock`, probablemente haya quedado un `next dev` viejo corriendo
 
 ## Ultimo hito conocido
 
-Ultimo commit funcional relevante al crear este archivo:
+Ultimo commit visible al actualizar este archivo:
 
-- `7c43870` `Add jersey laundry duty MVP flow`
-
-## Update 2026-03-18
-
-Supabase quedo conectado con exito y el backend minimo ya no esta vacio.
-
-Datos cargados manualmente:
-
-- `season`: `2026`
-- `match`: martes `2026-03-24`, `21:00`, `Backyard`, estado `open`
-- `players`: 12 registros iniciales
-
-Proximo objetivo inmediato:
-
-- validar el flujo real de confirmacion desde la UI
+- `db6ea61` `Simplify app navigation shell`

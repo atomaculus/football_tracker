@@ -2,7 +2,7 @@
 
 App web para operar los partidos de futbol de los martes sin depender del Excel como herramienta principal.
 
-El proyecto arranco para reemplazar `Futbol Martes.xlsx` y hoy ya cubre el flujo base del MVP con datos reales en Supabase y deploy en Vercel.
+El proyecto nacio para reemplazar `Futbol Martes.xlsx` y hoy ya cubre el flujo base del MVP con datos reales en Supabase y deploy en Vercel.
 
 ## Estado actual
 
@@ -69,13 +69,13 @@ Admins reales cargados hoy:
 - carga goles
 - marca el partido como `played`
 
-## Qué sigue siendo parcial o mejorable
+## Que sigue siendo parcial o mejorable
 
 - `/partido` cae al mock si un partido jugado no tiene `teams` y `goals` reales cargados
-- el panel admin funciona, pero quedo largo para operación semanal y conviene compactarlo
-- la logística real de camisetas todavía no esta automatizada end to end
-- la auth es suficiente para MVP, pero no es la versión final tipo OTP/magic link
-- parte de las estadísticas reales dependen de que el partido jugado tenga equipos y goles cargados
+- el panel admin funciona, pero quedo largo para operacion semanal y conviene compactarlo
+- la logistica real de camisetas todavia no esta automatizada end to end
+- la auth es suficiente para MVP, pero no es la version final tipo OTP o magic link
+- parte de las estadisticas reales dependen de que el partido jugado tenga equipos y goles cargados
 
 ## Stack
 
@@ -90,9 +90,9 @@ Admins reales cargados hoy:
 
 - `web/`: app frontend
 - `supabase/`: schema, seed y archivos auxiliares
-- `MVP_PLAN.md`: alcance funcional
-- `TECH_ROADMAP.md`: roadmap tecnico
-- `PROJECT_STATUS.md`: continuidad y contexto historico
+- `MVP_PLAN.md`: alcance funcional del MVP web
+- `TECH_ROADMAP.md`: roadmap tecnico actualizado desde el MVP web actual
+- `PROJECT_STATUS.md`: continuidad y estado consolidado del proyecto
 - `Futbol Martes.xlsx`: fuente original
 - `Futbol Martes (version 1).xlsx`: variante usada para rescatar datos reales de una fecha
 
@@ -140,10 +140,13 @@ Abrir `http://localhost:3000`
 - `199597c` Add admin teams and scoring workflow
 - `92d506b` Add admin match closure workflow
 - `c5d28e7` Allow late drops after signup close
+- `061d004` Require login across app pages
+- `0b33251` Remove test-stage messaging from public UI
+- `db6ea61` Simplify app navigation shell
 
-## Nota importante sobre estadísticas
+## Nota importante sobre estadisticas
 
-Si en `Historial` o `Jugadores` aparece poca señal estadística, no significa que el cálculo esté roto necesariamente. Puede pasar que el partido jugado tenga:
+Si en `Historial` o `Jugadores` aparece poca senal estadistica, no significa que el calculo este roto necesariamente. Puede pasar que el partido jugado tenga:
 
 - participantes reales cargados
 - pero sin `teams`
@@ -155,12 +158,12 @@ En ese caso:
 - la diferencia y el detalle fino quedan limitados
 - el sistema usa fallback cuando puede, pero no reemplaza resultado real
 
-## Próximo foco recomendado
+## Proximo foco recomendado
 
-No es backend crítico, sino operación y pulido:
+No es backend critico, sino operacion y pulido:
 
-1. usar el MVP en el próximo martes real
-2. detectar fricción concreta del panel admin
+1. usar el MVP en el proximo martes real
+2. detectar friccion concreta del panel admin
 3. compactar UX del admin
-4. terminar la logística de camisetas
+4. terminar la logistica de camisetas
 5. si hace falta, pasar de auth simple a OTP

@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Convertir el Excel actual en una app Android simple para gestionar los partidos de los martes, con foco en:
+Convertir el Excel actual en una app web simple para gestionar los partidos de los martes, con foco en:
 
 - confirmar asistencia semanal
 - armar lista de titulares y suplentes con reglas claras
@@ -24,7 +24,7 @@ Tambien muestra limitaciones tipicas del formato Excel:
 - no hay confirmacion semanal guiada
 - no hay un flujo claro de titulares, suplentes y bajas
 - el scoring de goles no parece estar modelado de forma detallada por partido
-- cuesta consultar historial de equipos y de companeros/rivales
+- cuesta consultar historial de equipos y de companeros o rivales
 - las reglas dependen mucho de interpretacion manual
 
 ## Usuario objetivo
@@ -42,35 +42,45 @@ Cada martes hay que resolver rapido:
 - quien hizo goles
 - como impacta eso en el historial
 
-## Propuesta MVP
+## Estado real del MVP hoy
 
-### Roles
+La V1 web ya tiene una parte importante del flujo implementado:
+
+- login simple por jugador y codigo compartido
+- confirmacion de asistencia persistida
+- cierre operativo de convocatoria
+- bajas tardias despues del cierre
+- panel admin para lista final, asistencia real, equipos y goles
+- historial real basico
+- fallback local si faltan credenciales o datos
+
+## Roles
 
 - `Admin`
-  - crea partidos
-  - abre/cierra convocatoria
-  - define titulares y suplentes
+  - abre o cierra convocatoria
+  - define lista final
+  - registra asistencia real
   - carga equipos, resultado y goles
   - puede corregir datos
 - `Jugador`
+  - inicia sesion
   - confirma asistencia
-  - se baja
-  - ve su historial
+  - se baja si ya estaba anotado
+  - ve historial
   - ve lista del proximo martes
   - ve equipos y resultado
 
-### Funcionalidades MVP
+## Funcionalidades MVP
 
 1. `Convocatoria semanal`
    - un partido por martes
-   - apertura automatica de convocatoria
+   - cierre operativo automatizado
    - cada jugador marca `Voy`, `No voy` o `Suplente`
    - timestamp de confirmacion
 
 2. `Lista de partido`
    - titulares y suplentes
-   - orden de prioridad visible
-   - motivo de prioridad resumido
+   - orden de prioridad visible o derivable
    - cambios de ultimo momento
    - estado `Suspendido` si no se llega al minimo de 12 o si se cancela por clima
 
@@ -79,7 +89,7 @@ Cada martes hay que resolver rapido:
    - asistencia real
    - bajas tardias
    - no-show
-   - estado final del partido (`jugado` o `suspendido`)
+   - estado final del partido (`played` o `suspended`)
 
 4. `Equipos`
    - dos equipos por partido
@@ -97,7 +107,7 @@ Cada martes hay que resolver rapido:
    - presencias reales
    - goles
    - diferencia de goles del equipo cuando jugo
-   - porcentaje simple de victorias/empates/derrotas
+   - porcentaje simple de victorias, empates o derrotas
 
 7. `Logistica de camisetas`
    - asignar quien se lleva las camisetas a lavar
@@ -114,12 +124,14 @@ Cada martes hay que resolver rapido:
 
 Conviene automatizar solo lo que no agregue demasiada complejidad:
 
-- apertura de lista cada lunes 08:00
 - cierre operativo configurable
 - orden por fecha de anotacion
 - clasificacion `titular`, `suplente`, `baja`, `ausente`
-- penalizacion por baja tardia
-- bonus de invierno si quieren mantener esa logica
+- validacion `14 => 7v7`
+- validacion `12 => 6v6`
+- alerta o suspension cuando hay menos de `12`
+- bloqueo de nuevas altas despues del cierre
+- permiso de baja tardia despues del cierre
 
 ## Reglas que dejaria manuales o semi-manuales
 
@@ -127,25 +139,28 @@ Conviene automatizar solo lo que no agregue demasiada complejidad:
 - excepciones informales entre amigos
 - prioridad especial de arqueros si no esta del todo definida
 - suplentes que entran por consenso
+- automatizacion completa del flujo de camisetas
 
 Estas reglas pueden vivir como override de admin para no trabar el MVP.
 
 ## Flujo principal semanal
 
-1. El lunes se abre automaticamente la convocatoria del martes.
+1. El admin deja abierta la convocatoria del martes.
 2. Los jugadores responden si van o no van.
-3. El admin ve la lista ordenada y arma titulares/suplentes.
-4. El martes se cierran cambios y se define la lista final.
-   Si no se llega a 12 jugadores o el clima obliga a frenarlo, la fecha se marca como suspendida.
-5. Se cargan equipos.
-6. Despues del partido se registra resultado y goles.
-7. La app actualiza historial y estadisticas.
-8. La app deja asignado quien se lleva las camisetas para devolverlas el martes siguiente.
+3. El sistema cierra nuevas altas `90 minutos` antes del partido.
+4. El admin arma la lista final y puede registrar bajas tardias.
+5. Si no se llega a 12 jugadores o el clima obliga a frenarlo, la fecha se marca como suspendida.
+6. Se cargan equipos.
+7. Despues del partido se registra resultado y goles.
+8. La app actualiza historial y estadisticas.
+9. La app deja visible quien se lleva las camisetas, aunque esa automatizacion todavia no esta cerrada end to end.
 
 ## Pantallas MVP
 
 1. `Login`
-   - acceso por WhatsApp OTP o magic link
+   - seleccion de jugador
+   - codigo grupal
+   - acceso admin por codigo extra
 
 2. `Inicio`
    - proximo partido
@@ -155,8 +170,8 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
 3. `Confirmar asistencia`
    - voy
    - no voy
-   - me bajo
-   - nota opcional
+   - suplente
+   - baja tardia si corresponde
 
 4. `Lista del martes`
    - confirmados
@@ -180,17 +195,12 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
    - estado de cada jugador
    - admins visibles
 
-8. `Mi perfil`
-   - presencias
-   - goles
-   - partidos jugados
-   - rendimiento simple
-
-9. `Admin`
-   - crear partido
+8. `Admin`
    - cerrar convocatoria
    - mover jugadores
-   - cargar resultado
+   - registrar asistencia real
+   - cargar equipos
+   - cargar resultado y goles
    - suspender fecha por clima o por no llegar al minimo
    - asignar o reasignar encargado de camisetas
 
@@ -198,7 +208,8 @@ Estas reglas pueden vivir como override de admin para no trabar el MVP.
 
 No las pondria en la primera entrega, pero si las dejaria disenadas:
 
-- notificaciones push de apertura y cierre
+- auth por OTP o magic link
+- notificaciones de apertura y cierre
 - votacion de clima
 - balanceador de equipos por nivel
 - ranking de companeros mas frecuentes
@@ -224,9 +235,10 @@ No las pondria en la primera entrega, pero si las dejaria disenadas:
 
 ### V1
 
+- login simple
 - convocatoria
-- lista
-- titulares/suplentes
+- lista final
+- cierre operativo
 - resultado
 - goles
 - historial
@@ -234,7 +246,7 @@ No las pondria en la primera entrega, pero si las dejaria disenadas:
 
 ### V2
 
-- clima
+- OTP o magic link
 - notificaciones avanzadas
 - votaciones
 - armado automatico de equipos
