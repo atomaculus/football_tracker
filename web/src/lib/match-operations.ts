@@ -436,7 +436,7 @@ export async function ensureMatchClosureIfNeeded(
 export async function getLaundryDutyForMatch(
   supabase: SupabaseClient,
   matchId?: string,
-  matchStatus?: MatchStatus,
+  matchStatus?: string,
 ): Promise<LaundryDuty | null> {
   if (!matchId) {
     return null;
