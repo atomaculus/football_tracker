@@ -1,26 +1,99 @@
 <svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1600" height="900" fill="#081811"/>
-  <ellipse cx="800" cy="142" rx="540" ry="190" fill="url(#lights)" fill-opacity="0.9"/>
-  <ellipse cx="800" cy="770" rx="760" ry="210" fill="url(#pitch)" fill-opacity="0.95"/>
-  <path d="M90 670C320 520 530 455 800 455C1070 455 1280 520 1510 670" stroke="rgba(255,255,255,0.16)" stroke-width="2"/>
-  <path d="M210 736C405 612 577 560 800 560C1023 560 1195 612 1390 736" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
-  <path d="M520 610H1080" stroke="#F6F8EE" stroke-opacity="0.32" stroke-width="4" stroke-linecap="round"/>
-  <path d="M800 520V800" stroke="#F6F8EE" stroke-opacity="0.22" stroke-width="3" stroke-linecap="round"/>
-  <circle cx="800" cy="675" r="84" stroke="#F6F8EE" stroke-opacity="0.2" stroke-width="3"/>
-  <rect x="0" y="0" width="1600" height="900" fill="url(#fade)"/>
+  <!-- Night sky base -->
+  <rect width="1600" height="900" fill="#060a14"/>
+
+  <!-- Stadium floodlight glow - left -->
+  <ellipse cx="200" cy="60" rx="300" ry="400" fill="url(#floodLeft)" fill-opacity="0.35"/>
+  <!-- Stadium floodlight glow - center -->
+  <ellipse cx="800" cy="40" rx="500" ry="350" fill="url(#floodCenter)" fill-opacity="0.5"/>
+  <!-- Stadium floodlight glow - right -->
+  <ellipse cx="1400" cy="60" rx="300" ry="400" fill="url(#floodRight)" fill-opacity="0.35"/>
+
+  <!-- Light beams from floodlights -->
+  <polygon points="160,0 400,500 120,500" fill="url(#beam)" fill-opacity="0.04"/>
+  <polygon points="400,0 580,500 320,500" fill="url(#beam)" fill-opacity="0.03"/>
+  <polygon points="800,0 1000,480 600,480" fill="url(#beam)" fill-opacity="0.05"/>
+  <polygon points="1200,0 1280,500 1080,500" fill="url(#beam)" fill-opacity="0.03"/>
+  <polygon points="1440,0 1480,500 1200,500" fill="url(#beam)" fill-opacity="0.04"/>
+
+  <!-- Stadium fog/atmosphere -->
+  <ellipse cx="800" cy="420" rx="900" ry="180" fill="url(#fog)" fill-opacity="0.3"/>
+
+  <!-- Pitch (green field) -->
+  <ellipse cx="800" cy="780" rx="800" ry="240" fill="url(#pitch)" fill-opacity="0.95"/>
+
+  <!-- Pitch lines - perspective curves -->
+  <path d="M60 700C300 540 530 470 800 470C1070 470 1300 540 1540 700" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+  <path d="M180 760C390 630 570 575 800 575C1030 575 1210 630 1420 760" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+
+  <!-- Center line -->
+  <path d="M480 625H1120" stroke="rgba(255,255,255,0.12)" stroke-width="3" stroke-linecap="round"/>
+  <!-- Center vertical -->
+  <path d="M800 540V820" stroke="rgba(255,255,255,0.08)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Center circle -->
+  <circle cx="800" cy="690" r="80" stroke="rgba(255,255,255,0.09)" stroke-width="2.5"/>
+  <!-- Center dot -->
+  <circle cx="800" cy="690" r="4" fill="rgba(255,255,255,0.15)"/>
+
+  <!-- Penalty box hints -->
+  <path d="M340 720H560V850" stroke="rgba(255,255,255,0.05)" stroke-width="2"/>
+  <path d="M1260 720H1040V850" stroke="rgba(255,255,255,0.05)" stroke-width="2"/>
+
+  <!-- Goal net hint - left -->
+  <rect x="280" y="750" width="60" height="40" rx="4" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none"/>
+  <!-- Goal net hint - right -->
+  <rect x="1260" y="750" width="60" height="40" rx="4" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none"/>
+
+  <!-- Stars scattered -->
+  <circle cx="120" cy="80" r="1" fill="white" fill-opacity="0.3"/>
+  <circle cx="340" cy="45" r="0.8" fill="white" fill-opacity="0.25"/>
+  <circle cx="560" cy="30" r="1.2" fill="white" fill-opacity="0.2"/>
+  <circle cx="680" cy="65" r="0.8" fill="white" fill-opacity="0.15"/>
+  <circle cx="950" cy="25" r="1" fill="white" fill-opacity="0.2"/>
+  <circle cx="1100" cy="55" r="0.8" fill="white" fill-opacity="0.25"/>
+  <circle cx="1300" cy="35" r="1.2" fill="white" fill-opacity="0.2"/>
+  <circle cx="1480" cy="70" r="0.8" fill="white" fill-opacity="0.3"/>
+  <circle cx="250" cy="120" r="0.6" fill="white" fill-opacity="0.15"/>
+  <circle cx="1350" cy="110" r="0.7" fill="white" fill-opacity="0.2"/>
+
+  <!-- Top fade overlay -->
+  <rect x="0" y="0" width="1600" height="900" fill="url(#topFade)"/>
+
   <defs>
-    <radialGradient id="lights" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(800 142) rotate(90) scale(190 540)">
-      <stop stop-color="#F4E7B8"/>
-      <stop offset="1" stop-color="#F4E7B8" stop-opacity="0"/>
+    <radialGradient id="floodLeft" cx="0.5" cy="0" r="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#f5c542" stop-opacity="0.6"/>
+      <stop offset="0.4" stop-color="#d4a843" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#d4a843" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="pitch" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(800 770) rotate(90) scale(210 760)">
-      <stop stop-color="#174D34"/>
-      <stop offset="1" stop-color="#0D2418"/>
+    <radialGradient id="floodCenter" cx="0.5" cy="0" r="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#ffffff" stop-opacity="0.4"/>
+      <stop offset="0.3" stop-color="#e8edf5" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#3b82f6" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="fade" x1="800" y1="0" x2="800" y2="900" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#07140F" stop-opacity="0.06"/>
-      <stop offset="0.32" stop-color="#07140F" stop-opacity="0"/>
-      <stop offset="1" stop-color="#07140F" stop-opacity="0.58"/>
+    <radialGradient id="floodRight" cx="0.5" cy="0" r="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#f5c542" stop-opacity="0.6"/>
+      <stop offset="0.4" stop-color="#d4a843" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#d4a843" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="beam" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="fog" cx="0.5" cy="0.5" r="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#3b82f6" stop-opacity="0.08"/>
+      <stop offset="0.5" stop-color="#1e293b" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#060a14" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pitch" cx="0.5" cy="0.3" r="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#1a6b3c"/>
+      <stop offset="0.6" stop-color="#0f4025"/>
+      <stop offset="1" stop-color="#0a0f1c"/>
+    </radialGradient>
+    <linearGradient id="topFade" x1="800" y1="0" x2="800" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#060a14" stop-opacity="0.3"/>
+      <stop offset="0.25" stop-color="#060a14" stop-opacity="0"/>
+      <stop offset="0.85" stop-color="#060a14" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#0a0f1c" stop-opacity="0.7"/>
     </linearGradient>
   </defs>
 </svg>

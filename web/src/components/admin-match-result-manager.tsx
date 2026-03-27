@@ -25,7 +25,7 @@ function SubmitButton({ disabled, label }: { disabled?: boolean; label: string }
     <button
       type="submit"
       disabled={disabled || pending}
-      className="w-full rounded-full bg-foreground px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-surface-dark sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
+      className="w-full rounded-full bg-accent px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0a0f1c] transition hover:bg-accent-strong sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Guardando" : label}
     </button>
@@ -41,10 +41,10 @@ function ActionMessage({ state }: { state: MatchResultAdminActionState }) {
     <div
       className={`rounded-[1rem] border px-4 py-3 text-sm leading-6 ${
         state.status === "success"
-          ? "border-lime/40 bg-[#dbe8d8] text-foreground"
+          ? "border-lime/40 bg-lime/[0.1] text-lime"
           : state.status === "demo"
-            ? "border-line bg-[#f1ead8] text-foreground"
-            : "border-accent/40 bg-[#f4ddcf] text-foreground"
+            ? "border-accent/30 bg-accent/[0.08] text-accent"
+            : "border-red-500/40 bg-red-500/[0.1] text-red-400"
       }`}
     >
       {state.message}
@@ -67,7 +67,7 @@ function TeamAssignmentRow({
   );
 
   return (
-    <form action={formAction} className="rounded-[1.2rem] border border-line bg-white/70 p-4">
+    <form action={formAction} className="rounded-[1.2rem] border border-white/[0.1] bg-white/[0.06] p-4">
       <input type="hidden" name="matchId" value={matchId ?? ""} />
       <input type="hidden" name="playerId" value={entry.playerId} />
 
@@ -82,7 +82,7 @@ function TeamAssignmentRow({
           <select
             name="teamId"
             defaultValue={entry.teamId ?? ""}
-            className="w-full rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold text-foreground outline-none transition focus:border-foreground sm:min-w-[12rem]"
+            className="w-full rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none transition focus:border-accent/40 sm:min-w-[12rem]"
           >
             <option value="">Sin equipo</option>
             {teams.map((team) => (
@@ -110,7 +110,7 @@ function DeleteGoalRow({ goal }: { goal: GoalEntry }) {
   return (
     <form
       action={formAction}
-      className="flex flex-wrap items-center justify-between gap-3 rounded-[1.2rem] border border-line bg-white/70 px-4 py-4"
+      className="flex flex-wrap items-center justify-between gap-3 rounded-[1.2rem] border border-white/[0.1] bg-white/[0.06] px-4 py-4"
     >
       <input type="hidden" name="goalId" value={goal.id} />
       <div>
@@ -175,18 +175,18 @@ export function AdminMatchResultManager({
             <input type="hidden" name="teamBId" value={teamB?.id ?? ""} />
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="grid gap-3 rounded-[1.2rem] border border-line bg-white/70 p-4">
+              <div className="grid gap-3 rounded-[1.2rem] border border-white/[0.1] bg-white/[0.06] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">Equipo A</p>
                 <input
                   name="teamAName"
                   defaultValue={teamA?.name ?? "Verdes"}
-                  className="rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-foreground"
+                  className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
                   placeholder="Nombre"
                 />
                 <select
                   name="teamAColor"
                   defaultValue={teamA?.color ?? "bg-lime text-foreground"}
-                  className="rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-foreground"
+                  className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
                 >
                   <option value="bg-lime text-foreground">Verde</option>
                   <option value="bg-accent text-white">Naranja</option>
@@ -198,23 +198,23 @@ export function AdminMatchResultManager({
                   min="0"
                   name="teamAGoals"
                   defaultValue={teamA?.score ?? 0}
-                  className="rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-foreground"
+                  className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
                   placeholder="Goles"
                 />
               </div>
 
-              <div className="grid gap-3 rounded-[1.2rem] border border-line bg-white/70 p-4">
+              <div className="grid gap-3 rounded-[1.2rem] border border-white/[0.1] bg-white/[0.06] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">Equipo B</p>
                 <input
                   name="teamBName"
                   defaultValue={teamB?.name ?? "Naranjas"}
-                  className="rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-foreground"
+                  className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
                   placeholder="Nombre"
                 />
                 <select
                   name="teamBColor"
                   defaultValue={teamB?.color ?? "bg-accent text-white"}
-                  className="rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-foreground"
+                  className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
                 >
                   <option value="bg-accent text-white">Naranja</option>
                   <option value="bg-lime text-foreground">Verde</option>
@@ -226,7 +226,7 @@ export function AdminMatchResultManager({
                   min="0"
                   name="teamBGoals"
                   defaultValue={teamB?.score ?? 0}
-                  className="rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-foreground"
+                  className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
                   placeholder="Goles"
                 />
               </div>
@@ -282,7 +282,7 @@ export function AdminMatchResultManager({
             <div className="grid gap-4 md:grid-cols-[1fr_1fr_120px_auto]">
               <select
                 name="scorerPlayerId"
-                className="rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-foreground"
+                className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
               >
                 {playableParticipants.map((participant) => (
                   <option key={participant.playerId} value={participant.playerId}>
@@ -292,7 +292,7 @@ export function AdminMatchResultManager({
               </select>
               <select
                 name="teamId"
-                className="rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-foreground"
+                className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
               >
                 {teams.map((team) => (
                   <option key={team.id} value={team.id}>
@@ -305,7 +305,7 @@ export function AdminMatchResultManager({
                 min="1"
                 max="120"
                 name="minute"
-                className="rounded-[1rem] border border-line bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-foreground"
+                className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
                 placeholder="Min"
               />
               <div className="w-full md:w-auto">

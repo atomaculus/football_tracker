@@ -38,15 +38,15 @@ export default async function AdminPage() {
         <SectionCard eyebrow="Lectura real" title="Pulso operativo">
           <div className="grid gap-3">
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[1.4rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4">
+              <div className="rounded-[1.4rem] border border-lime/20 bg-lime/[0.08] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Confirmados</p>
-                <p className="mt-2 text-3xl font-black">{attendanceSummary.confirmed}</p>
+                <p className="mt-2 text-3xl font-black text-lime">{attendanceSummary.confirmed}</p>
               </div>
-              <div className="rounded-[1.4rem] border border-[#d96d2d]/12 bg-[#f4ddcf] p-4">
+              <div className="rounded-[1.4rem] border border-accent/20 bg-accent/[0.08] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Suplentes</p>
-                <p className="mt-2 text-3xl font-black">{attendanceSummary.backups}</p>
+                <p className="mt-2 text-3xl font-black text-accent">{attendanceSummary.backups}</p>
               </div>
-              <div className="rounded-[1.4rem] border border-[#2d6a3d]/10 bg-[#dbe8d8] p-4">
+              <div className="rounded-[1.4rem] border border-white/[0.1] bg-white/[0.04] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">No van</p>
                 <p className="mt-2 text-3xl font-black">{attendanceSummary.declined}</p>
               </div>
@@ -54,11 +54,11 @@ export default async function AdminPage() {
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Respuestas</p>
                 <p className="mt-2 text-3xl font-black">{attendanceSummary.totalResponses}</p>
               </div>
-              <div className="rounded-[1.4rem] border border-[#2d6a3d]/10 bg-[#dbe8d8] p-4">
+              <div className="rounded-[1.4rem] border border-lime/20 bg-lime/[0.08] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">
                   Titulares proyectados
                 </p>
-                <p className="mt-2 text-3xl font-black">{projectedStarters}</p>
+                <p className="mt-2 text-3xl font-black text-lime">{projectedStarters}</p>
               </div>
               <div className="rounded-[1.4rem] border border-line bg-surface-strong p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">
@@ -128,13 +128,13 @@ export default async function AdminPage() {
               <Pill tone="lime">{laundryDuty.status}</Pill>
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4">
+              <div className="rounded-[1.2rem] border border-lime/20 bg-lime/[0.08] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Modo</p>
                 <p className="mt-2 text-lg font-black capitalize">
                   {laundryDuty.assignmentMode}
                 </p>
               </div>
-              <div className="rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#dbe8d8] p-4">
+              <div className="rounded-[1.2rem] border border-star-blue/20 bg-star-blue/[0.08] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">Entrega</p>
                 <p className="mt-2 text-lg font-black">{laundryDuty.dueLabel}</p>
               </div>

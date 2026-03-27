@@ -29,7 +29,7 @@ export default async function HistoryPage() {
                     <p className="text-lg font-extrabold">{match.date}</p>
                     <p className="text-sm text-muted">{match.attendance}</p>
                   </div>
-                  <p className="rounded-full bg-[#efe7d5] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em]">
+                  <p className="rounded-full border border-accent/30 bg-accent/[0.1] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-accent">
                     {match.result}
                   </p>
                 </div>

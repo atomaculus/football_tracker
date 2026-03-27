@@ -1,20 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #eef4ea;
-  --foreground: #0a1f15;
-  --surface: rgba(247, 250, 244, 0.76);
-  --surface-strong: rgba(251, 253, 248, 0.92);
-  --surface-dark: #0d2418;
-  --line: rgba(10, 31, 21, 0.12);
-  --muted: #526956;
-  --accent: #f36b21;
-  --accent-strong: #bd4f16;
-  --lime: #cde55a;
-  --sand: #dcc79d;
-  --pitch: #2e8a4f;
-  --pitch-strong: #184c31;
-  --chalk: #f4f7ef;
+  --background: #0a0f1c;
+  --foreground: #e8edf5;
+  --surface: rgba(15, 23, 42, 0.72);
+  --surface-strong: rgba(20, 30, 52, 0.88);
+  --surface-dark: #060a14;
+  --line: rgba(148, 163, 194, 0.15);
+  --muted: #7b8ba3;
+  --accent: #d4a843;
+  --accent-strong: #b8912e;
+  --lime: #34d399;
+  --sand: #f5c542;
+  --pitch: #1a6b3c;
+  --pitch-strong: #0f4025;
+  --chalk: #1e293b;
+  --star-blue: #3b82f6;
 }
 
 @theme inline {
@@ -29,6 +30,7 @@
   --color-accent-strong: var(--accent-strong);
   --color-lime: var(--lime);
   --color-sand: var(--sand);
+  --color-star-blue: var(--star-blue);
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
 }
@@ -45,16 +47,15 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
   background:
-    linear-gradient(180deg, rgba(6, 20, 14, 0.24), rgba(6, 20, 14, 0.04) 28%, rgba(238, 244, 234, 0) 56%),
-    url("/stadium-backdrop.svg"),
-    radial-gradient(circle at top left, rgba(205, 229, 90, 0.32), transparent 24%),
-    radial-gradient(circle at 88% 14%, rgba(243, 107, 33, 0.22), transparent 20%),
-    linear-gradient(140deg, rgba(46, 138, 79, 0.1), transparent 26%),
-    linear-gradient(180deg, #edf5ea 0%, #ebf2e6 38%, #dce8dd 100%);
-  background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
-  background-position: center top, center top, left top, right top, center top, center top;
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(59, 130, 246, 0.12), transparent),
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(212, 168, 67, 0.08), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(212, 168, 67, 0.08), transparent),
+    url("/stadium-bg.jpg"),
+    linear-gradient(180deg, #080d18 0%, #0a0f1c 40%, #0c1220 100%);
+  background-attachment: fixed;
+  background-position: center top;
   background-repeat: no-repeat;
-  background-size: cover, cover, auto, auto, auto, auto;
+  background-size: cover;
   min-height: 100vh;
 }
 
@@ -63,8 +64,8 @@ a {
 }
 
 ::selection {
-  background: rgba(185, 218, 85, 0.72);
-  color: #112117;
+  background: rgba(212, 168, 67, 0.4);
+  color: #f5f5f5;
 }
 
 .grain {
@@ -77,16 +78,16 @@ a {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(16, 38, 22, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
   background-size: 20px 20px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 92%);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.6), transparent 92%);
 }
 
 .card-shadow {
   box-shadow:
-    0 24px 60px rgba(9, 28, 18, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.74);
+    0 24px 60px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .display {
@@ -104,9 +105,9 @@ a {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(130deg, rgba(255, 255, 255, 0.34), transparent 44%),
-    radial-gradient(circle at 18% 18%, rgba(205, 229, 90, 0.28), transparent 28%),
-    radial-gradient(circle at 84% 14%, rgba(243, 107, 33, 0.24), transparent 24%);
+    linear-gradient(130deg, rgba(59, 130, 246, 0.08), transparent 44%),
+    radial-gradient(circle at 18% 18%, rgba(212, 168, 67, 0.12), transparent 28%),
+    radial-gradient(circle at 84% 14%, rgba(59, 130, 246, 0.1), transparent 24%);
   pointer-events: none;
 }
 
@@ -117,24 +118,24 @@ a {
   width: 36rem;
   height: 36rem;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgba(46, 138, 79, 0.24), transparent 68%);
+  background: radial-gradient(circle, rgba(26, 107, 60, 0.2), transparent 68%);
   pointer-events: none;
 }
 
 .fixture-kicker {
   background:
-    linear-gradient(90deg, rgba(205, 229, 90, 0.9), rgba(243, 107, 33, 0.9));
-  color: #0a1f15;
+    linear-gradient(90deg, rgba(212, 168, 67, 0.95), rgba(245, 197, 66, 0.95));
+  color: #0a0f1c;
 }
 
 .glass-panel {
   backdrop-filter: blur(18px);
-  background: rgba(249, 252, 246, 0.68);
+  background: rgba(15, 23, 42, 0.65);
 }
 
 .dark-panel {
   background:
-    linear-gradient(180deg, rgba(19, 50, 33, 0.92), rgba(12, 30, 20, 0.96));
+    linear-gradient(180deg, rgba(6, 10, 20, 0.94), rgba(4, 6, 14, 0.97));
 }
 
 .stadium-divider {
@@ -148,6 +149,15 @@ a {
   right: 0;
   top: -1px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  background: linear-gradient(90deg, transparent, rgba(212, 168, 67, 0.3), transparent);
   opacity: 0.55;
+}
+
+/* Glow effect for accent elements */
+.glow-gold {
+  box-shadow: 0 0 20px rgba(212, 168, 67, 0.15), 0 0 60px rgba(212, 168, 67, 0.05);
+}
+
+.glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15), 0 0 60px rgba(59, 130, 246, 0.05);
 }

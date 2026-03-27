@@ -188,13 +188,13 @@ export function AvailabilityForm({
           </div>
 
           {!submissionsOpen && lateDropAllowed ? (
-            <div className="rounded-[1.2rem] border border-[#d96d2d]/30 bg-[#f7ddc9] px-4 py-3 text-sm leading-6 text-foreground">
+            <div className="rounded-[1.2rem] border border-accent/30 bg-accent/[0.08] px-4 py-3 text-sm leading-6 text-accent">
               La convocatoria ya cerro. Desde aca solo se permite marcar `No voy` para registrar una baja tardia.
             </div>
           ) : null}
 
           {!submissionsOpen && !lateDropAllowed ? (
-            <div className="rounded-[1.2rem] border border-accent/40 bg-[#f7ddc9] px-4 py-3 text-sm leading-6 text-foreground">
+            <div className="rounded-[1.2rem] border border-accent/30 bg-accent/[0.08] px-4 py-3 text-sm leading-6 text-accent">
               {matchStatus === "Partido suspendido"
                 ? "La fecha esta suspendida. No se aceptan respuestas nuevas."
                 : "La convocatoria ya esta cerrada. El admin puede reabrirla manualmente si hace falta."}
@@ -205,10 +205,10 @@ export function AvailabilityForm({
             <div
               className={`rounded-[1.2rem] border px-4 py-3 text-sm leading-6 ${
                 actionState.status === "success"
-                  ? "border-lime bg-[#dae8db] text-foreground"
+                  ? "border-lime/40 bg-lime/[0.1] text-lime"
                   : actionState.status === "demo"
-                    ? "border-line bg-[#f1ead8] text-foreground"
-                    : "border-accent/40 bg-[#f7ddc9] text-foreground"
+                    ? "border-accent/30 bg-accent/[0.08] text-accent"
+                    : "border-red-500/40 bg-red-500/[0.1] text-red-400"
               }`}
             >
               {actionState.message}

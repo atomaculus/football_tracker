@@ -22,7 +22,7 @@ function SaveButton({ disabled }: { disabled: boolean }) {
     <button
       type="submit"
       disabled={disabled || pending}
-      className="rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-foreground transition hover:bg-[#edf3e4] disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full bg-accent px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0a0f1c] transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Guardando" : "Aplicar"}
     </button>
@@ -97,10 +97,10 @@ function AttendanceRow({
         <div
           className={`mt-3 rounded-[1rem] border px-4 py-3 text-sm leading-6 ${
             actionState.status === "success"
-              ? "border-lime/40 bg-[#dbe8d8] text-foreground"
+              ? "border-lime/40 bg-lime/[0.1] text-lime"
               : actionState.status === "demo"
-                ? "border-white/12 bg-white/8 text-white/78"
-                : "border-accent/40 bg-[#f4ddcf] text-foreground"
+                ? "border-accent/30 bg-accent/[0.08] text-accent"
+                : "border-red-500/40 bg-red-500/[0.1] text-red-400"
           }`}
         >
           {actionState.message}

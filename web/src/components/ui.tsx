@@ -40,9 +40,9 @@ export function Pill({
   tone?: "default" | "lime" | "accent";
 }) {
   const tones = {
-    default: "bg-[#e4ecd9] text-foreground",
-    lime: "bg-lime text-foreground",
-    accent: "bg-accent text-white",
+    default: "bg-white/[0.08] text-foreground border border-white/[0.1]",
+    lime: "bg-lime/20 text-lime border border-lime/30",
+    accent: "bg-accent/20 text-accent border border-accent/30",
   };
 
   return (

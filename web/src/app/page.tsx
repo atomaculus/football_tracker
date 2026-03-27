@@ -45,7 +45,7 @@ export default async function Home() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href="/confirmar"
-                  className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#173a28]"
+                  className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-[#0a0f1c] transition hover:bg-accent-strong"
                 >
                   Confirmar asistencia
                 </Link>
@@ -66,15 +66,15 @@ export default async function Home() {
               </div>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[1.35rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4">
+                <div className="rounded-[1.35rem] border border-lime/20 bg-lime/[0.08] p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted">Formato</p>
-                  <p className="mt-2 text-3xl font-black">{nextMatch.format}</p>
+                  <p className="mt-2 text-3xl font-black text-lime">{nextMatch.format}</p>
                 </div>
-                <div className="rounded-[1.35rem] border border-[#d96d2d]/12 bg-[#f4ddcf] p-4">
+                <div className="rounded-[1.35rem] border border-accent/20 bg-accent/[0.08] p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted">Objetivo</p>
-                  <p className="mt-2 text-3xl font-black">{nextMatch.targetPlayers}</p>
+                  <p className="mt-2 text-3xl font-black text-accent">{nextMatch.targetPlayers}</p>
                 </div>
-                <div className="rounded-[1.35rem] border border-line bg-background/70 p-4">
+                <div className="rounded-[1.35rem] border border-white/[0.1] bg-white/[0.04] p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted">Fallback</p>
                   <p className="mt-2 text-3xl font-black">{nextMatch.fallbackPlayers}</p>
                 </div>
@@ -109,7 +109,7 @@ export default async function Home() {
             </p>
             <Link
               href="/confirmar"
-              className="rounded-full border border-line bg-white/70 px-4 py-2 text-sm font-semibold text-foreground transition hover:border-foreground"
+              className="rounded-full border border-white/[0.1] bg-white/[0.06] px-4 py-2 text-sm font-semibold text-foreground transition hover:border-accent/40"
             >
               Ver lista completa
             </Link>
@@ -133,9 +133,9 @@ export default async function Home() {
                   <Pill tone={index === 0 ? "lime" : "default"}>{index === 0 ? "On fire" : "Top"}</Pill>
                 </div>
 
-                <div className="mt-5 rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4">
+                <div className="mt-5 rounded-[1.2rem] border border-lime/20 bg-lime/[0.08] p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted">Jugados</p>
-                  <p className="mt-2 text-3xl font-black">{player.presences}</p>
+                  <p className="mt-2 text-3xl font-black text-lime">{player.presences}</p>
                 </div>
               </div>
             ))}
@@ -144,7 +144,7 @@ export default async function Home() {
           <div className="mt-5">
             <Link
               href="/historial"
-              className="inline-flex rounded-full border border-line bg-white/70 px-4 py-2 text-sm font-semibold text-foreground transition hover:border-foreground"
+              className="inline-flex rounded-full border border-white/[0.1] bg-white/[0.06] px-4 py-2 text-sm font-semibold text-foreground transition hover:border-accent/40"
             >
               Ver historial completo
             </Link>
@@ -164,10 +164,10 @@ export default async function Home() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <Pill tone="lime">{laundryDuty.status}</Pill>
-              <div className="w-full rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#edf3e4] px-4 py-3 text-sm sm:w-auto">
+              <div className="w-full rounded-[1.2rem] border border-lime/20 bg-lime/[0.08] px-4 py-3 text-sm sm:w-auto">
                 <span className="font-bold">Modo:</span> {laundryDuty.assignmentMode}
               </div>
-              <div className="w-full rounded-[1.2rem] border border-line bg-background/70 px-4 py-3 text-sm sm:w-auto">
+              <div className="w-full rounded-[1.2rem] border border-white/[0.1] bg-white/[0.04] px-4 py-3 text-sm sm:w-auto">
                 <span className="font-bold">Entrega:</span> {laundryDuty.dueLabel}
               </div>
             </div>

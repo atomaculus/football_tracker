@@ -156,20 +156,20 @@ export function MatchCountdown({
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#edf3e4] p-4 text-center">
+        <div className="rounded-[1.2rem] border border-lime/20 bg-lime/[0.08] p-4 text-center">
           <p className="text-3xl font-black">{countdown.days}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted">Dias</p>
         </div>
-        <div className="rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#dbe8d8] p-4 text-center">
+        <div className="rounded-[1.2rem] border border-star-blue/20 bg-star-blue/[0.08] p-4 text-center">
           <p className="text-3xl font-black">{countdown.hours}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted">Horas</p>
         </div>
-        <div className="rounded-[1.2rem] border border-[#d96d2d]/12 bg-[#f4ddcf] p-4 text-center">
+        <div className="rounded-[1.2rem] border border-accent/20 bg-accent/[0.08] p-4 text-center">
           <p className="text-3xl font-black">{countdown.minutes}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted">Min</p>
         </div>
-        <div className="rounded-[1.2rem] border border-[#2d6a3d]/10 bg-[#ecede4] p-4 text-center">
-          <p className="text-3xl font-black text-accent-strong">{countdown.seconds}</p>
+        <div className="rounded-[1.2rem] border border-white/[0.1] bg-white/[0.06] p-4 text-center">
+          <p className="text-3xl font-black text-accent">{countdown.seconds}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted">Seg</p>
         </div>
       </div>

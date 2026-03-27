@@ -18,7 +18,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-white transition hover:bg-surface-dark disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-[#0a0f1c] transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Entrando..." : "Entrar"}
     </button>
@@ -101,10 +101,10 @@ export function LoginForm({
         <div
           className={`rounded-[1.2rem] border px-4 py-3 text-sm leading-6 ${
             actionState.status === "success"
-              ? "border-lime bg-[#dae8db] text-foreground"
+              ? "border-lime/40 bg-lime/[0.1] text-lime"
               : actionState.status === "demo"
-                ? "border-line bg-[#f1ead8] text-foreground"
-                : "border-accent/40 bg-[#f7ddc9] text-foreground"
+                ? "border-accent/30 bg-accent/[0.08] text-accent"
+                : "border-red-500/40 bg-red-500/[0.1] text-red-400"
           }`}
         >
           {actionState.message}
