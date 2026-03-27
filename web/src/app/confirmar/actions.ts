@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 
 import { requireViewerSession } from "@/lib/auth";
-import { ensureMatchClosureIfNeeded, getSignupCutoffDate } from "@/lib/match-operations";
+import {
+  ensureMatchClosureIfNeeded,
+  getOpeningResponseForPlayer,
+  getSignupCutoffDate,
+} from "@/lib/match-operations";
 import { getSupabaseClient, hasSupabaseEnv } from "@/lib/supabase";
 
 export type AvailabilityActionState = {
@@ -118,12 +122,21 @@ export async function submitAvailabilityResponse(
     };
   }
 
+  const persistedResponse = submissionsOpen
+    ? await getOpeningResponseForPlayer(
+        supabase,
+        matchId,
+        playerId,
+        response as "going" | "backup" | "not_going" | "dropped",
+      )
+    : "dropped";
+
   const { error } = await supabase.from("availability_responses").upsert(
     {
       match_id: matchId,
       player_id: playerId,
       responded_at: new Date().toISOString(),
-      response: submissionsOpen ? response : "dropped",
+      response: persistedResponse,
     },
     {
       onConflict: "match_id,player_id",
@@ -143,7 +156,9 @@ export async function submitAvailabilityResponse(
 
   return {
     message: submissionsOpen
-      ? "Respuesta guardada. La lista del martes ya quedo actualizada."
+      ? persistedResponse === "backup" && response === "going"
+        ? "Respuesta guardada. Como no venias de la fecha anterior, entraste como suplente por defecto."
+        : "Respuesta guardada. La lista del martes ya quedo actualizada."
       : "Baja tardia registrada. El siguiente suplente ya puede ocupar ese lugar.",
     status: "success",
   };

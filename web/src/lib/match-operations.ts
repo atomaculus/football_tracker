@@ -113,6 +113,84 @@ async function getLatestPlayedRoster(
   return data as PreviousPlayerInput[];
 }
 
+export async function seedAvailabilityFromPreviousRoster(
+  supabase: SupabaseClient,
+  matchId: string,
+) {
+  const previousRoster = await getLatestPlayedRoster(supabase, matchId);
+
+  if (!previousRoster?.length) {
+    return {
+      error: false,
+      message: "No habia una fecha jugada previa para precargar confirmados.",
+      seeded: 0,
+    };
+  }
+
+  const { data: existingResponses, error: existingResponsesError } = await supabase
+    .from("availability_responses")
+    .select("player_id")
+    .eq("match_id", matchId);
+
+  if (existingResponsesError) {
+    return {
+      error: true,
+      message: "No se pudo verificar la lista precargada de la nueva convocatoria.",
+      seeded: 0,
+    };
+  }
+
+  const existingIds = new Set((existingResponses ?? []).map((row) => row.player_id));
+  const rowsToInsert = previousRoster
+    .filter((player) => !existingIds.has(player.player_id))
+    .map((player) => ({
+      match_id: matchId,
+      player_id: player.player_id,
+      responded_at: new Date().toISOString(),
+      response: "going" as const,
+    }));
+
+  if (!rowsToInsert.length) {
+    return {
+      error: false,
+      message: "La convocatoria ya tenia precargada la base de confirmados.",
+      seeded: 0,
+    };
+  }
+
+  const { error: insertError } = await supabase.from("availability_responses").insert(rowsToInsert);
+
+  if (insertError) {
+    return {
+      error: true,
+      message: "No se pudieron precargar los jugadores de la fecha anterior.",
+      seeded: 0,
+    };
+  }
+
+  return {
+    error: false,
+    message: `Se precargaron ${rowsToInsert.length} jugadores de la fecha anterior como confirmados.`,
+    seeded: rowsToInsert.length,
+  };
+}
+
+export async function getOpeningResponseForPlayer(
+  supabase: SupabaseClient,
+  matchId: string,
+  playerId: string,
+  requestedResponse: "going" | "backup" | "not_going" | "dropped",
+) {
+  if (requestedResponse !== "going") {
+    return requestedResponse;
+  }
+
+  const previousRoster = await getLatestPlayedRoster(supabase, matchId);
+  const previousPlayerIds = new Set((previousRoster ?? []).map((player) => player.player_id));
+
+  return previousPlayerIds.has(playerId) ? "going" : "backup";
+}
+
 export async function syncMatchParticipants(supabase: SupabaseClient, matchId: string) {
   const [
     { data: match, error: matchError },
@@ -484,6 +562,11 @@ export async function ensureMatchOpeningIfNeeded(
     return { error: true, match: typedMatch, message: "No se pudo abrir la convocatoria por horario." };
   }
 
+  const seedResult = await seedAvailabilityFromPreviousRoster(supabase, matchId);
+  if (seedResult.error) {
+    return { error: true, match: typedMatch, message: seedResult.message };
+  }
+
   const { data: refreshedMatch, error: refreshedMatchError } = await supabase
     .from("matches")
     .select("id, match_date, start_time, status, target_players")
@@ -493,7 +576,9 @@ export async function ensureMatchOpeningIfNeeded(
   return {
     error: Boolean(refreshedMatchError),
     match: refreshedMatchError ? typedMatch : ((refreshedMatch as MatchLifecycleRow | null) ?? typedMatch),
-    message: "Convocatoria abierta automaticamente el domingo a las 10:00.",
+    message: seedResult.seeded
+      ? `Convocatoria abierta automaticamente el domingo a las 10:00. ${seedResult.message}`
+      : "Convocatoria abierta automaticamente el domingo a las 10:00.",
   };
 }
 

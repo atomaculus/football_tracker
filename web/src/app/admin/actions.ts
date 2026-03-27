@@ -6,7 +6,9 @@ import { requireAdminSession } from "@/lib/auth";
 import {
   ensureMatchClosureIfNeeded,
   finalizeMatchClosure,
+  getOpeningResponseForPlayer,
   getSignupCutoffDate,
+  seedAvailabilityFromPreviousRoster,
   syncMatchParticipants,
   syncLaundryAssignment,
 } from "@/lib/match-operations";
@@ -42,6 +44,69 @@ type MatchAdminRow = {
   start_time: string | null;
   status: "scheduled" | "open" | "closed" | "played" | "cancelled" | "suspended";
 };
+
+function getNextTuesdayIsoDate(baseDate = new Date()) {
+  const nextDate = new Date(baseDate);
+  const daysUntilTuesday = (2 - nextDate.getDay() + 7) % 7 || 7;
+  nextDate.setDate(nextDate.getDate() + daysUntilTuesday);
+
+  const year = nextDate.getFullYear();
+  const month = String(nextDate.getMonth() + 1).padStart(2, "0");
+  const day = String(nextDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+async function ensureNextScheduledMatch() {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { error: true, matchId: null, message: "No se pudo conectar con Supabase." };
+  }
+
+  const nextTuesday = getNextTuesdayIsoDate();
+  const { data: existingMatch, error: existingMatchError } = await supabase
+    .from("matches")
+    .select("id")
+    .eq("match_date", nextTuesday)
+    .in("status", ["scheduled", "open", "closed", "suspended"])
+    .maybeSingle<{ id: string }>();
+
+  if (existingMatchError) {
+    return {
+      error: true,
+      matchId: null,
+      message: "No se pudo verificar si ya existe la proxima fecha.",
+    };
+  }
+
+  if (existingMatch) {
+    return { error: false, matchId: existingMatch.id };
+  }
+
+  const { data: createdMatch, error: createError } = await supabase
+    .from("matches")
+    .insert({
+      fallback_players: 12,
+      format_label: "7v7",
+      location: "Backyard",
+      match_date: nextTuesday,
+      start_time: "19:00:00",
+      status: "scheduled",
+      target_players: 14,
+    })
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (createError || !createdMatch) {
+    return {
+      error: true,
+      matchId: null,
+      message: "No se pudo crear la proxima fecha automaticamente.",
+    };
+  }
+
+  return { error: false, matchId: createdMatch.id };
+}
 
 async function markLateCancelParticipant(matchId: string, playerId: string) {
   const supabase = getSupabaseClient();
@@ -171,11 +236,11 @@ export async function updateMatchStatus(
   formData: FormData,
 ): Promise<MatchAdminActionState> {
   await requireAdminSession("/admin");
-  const matchId = String(formData.get("matchId") ?? "");
+  const requestedMatchId = String(formData.get("matchId") ?? "");
   const status = String(formData.get("status") ?? "");
   const notes = String(formData.get("notes") ?? "").trim();
 
-  if (!matchId || !status) {
+  if (!status) {
     return {
       message: "Falta el partido o el estado a actualizar.",
       status: "error",
@@ -195,6 +260,20 @@ export async function updateMatchStatus(
       message: "No se pudo conectar con Supabase.",
       status: "error",
     };
+  }
+
+  let matchId = requestedMatchId;
+  if (!matchId) {
+    const nextMatchResult = await ensureNextScheduledMatch();
+
+    if (nextMatchResult.error || !nextMatchResult.matchId) {
+      return {
+        message: nextMatchResult.message ?? "No se pudo preparar la proxima fecha.",
+        status: "error",
+      };
+    }
+
+    matchId = nextMatchResult.matchId;
   }
 
   const { error } = await supabase
@@ -278,6 +357,38 @@ export async function updateMatchStatus(
         status: "error",
       };
     }
+
+    const nextMatchResult = await ensureNextScheduledMatch();
+    if (nextMatchResult.error) {
+      return {
+        message:
+          nextMatchResult.message ??
+          "El partido quedo marcado como jugado, pero no se pudo preparar la proxima fecha.",
+        status: "error",
+      };
+    }
+  }
+
+  if (status === "open") {
+    const seedResult = await seedAvailabilityFromPreviousRoster(supabase, matchId);
+
+    if (seedResult.error) {
+      return {
+        message: seedResult.message,
+        status: "error",
+      };
+    }
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+    revalidatePath("/confirmar");
+
+    return {
+      message: seedResult.seeded
+        ? `Convocatoria abierta. ${seedResult.message}`
+        : "Convocatoria abierta. La base inicial ya estaba cargada.",
+      status: "success",
+    };
   }
 
   revalidatePath("/");
@@ -388,12 +499,21 @@ export async function updateAttendanceResponseByAdmin(
     };
   }
 
+  const persistedResponse = submissionsOpen
+    ? await getOpeningResponseForPlayer(
+        supabase,
+        matchId,
+        playerId,
+        response as "going" | "backup" | "not_going" | "dropped",
+      )
+    : "dropped";
+
   const { error } = await supabase.from("availability_responses").upsert(
     {
       match_id: matchId,
       player_id: playerId,
       responded_at: new Date().toISOString(),
-      response: submissionsOpen ? response : "dropped",
+      response: persistedResponse,
     },
     {
       onConflict: "match_id,player_id",
@@ -442,7 +562,9 @@ export async function updateAttendanceResponseByAdmin(
 
   return {
     message: submissionsOpen
-      ? "Respuesta actualizada desde admin."
+      ? persistedResponse === "backup" && response === "going"
+        ? "Respuesta actualizada desde admin. Como no venia de la fecha anterior, quedo como suplente."
+        : "Respuesta actualizada desde admin."
       : "Baja tardia aplicada. La lista final ya corrio al siguiente suplente.",
     status: "success",
   };
