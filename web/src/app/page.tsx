@@ -86,20 +86,26 @@ export default async function Home() {
 
       <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <SectionCard eyebrow="Lista en vivo" title="Ultimos movimientos">
-          <div className="space-y-3">
-            {recentResponses.map((player) => (
-              <div
-                key={`${player.name}-${player.detail}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-line bg-surface-strong px-4 py-4"
-              >
-                <div>
-                  <p className="font-extrabold">{player.name}</p>
-                  <p className="text-sm text-muted">{player.detail}</p>
+          {recentResponses.length ? (
+            <div className="space-y-3">
+              {recentResponses.map((player) => (
+                <div
+                  key={`${player.name}-${player.detail}`}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-line bg-surface-strong px-4 py-4"
+                >
+                  <div>
+                    <p className="font-extrabold">{player.name}</p>
+                    <p className="text-sm text-muted">{player.detail}</p>
+                  </div>
+                  <Pill>{player.status}</Pill>
                 </div>
-                <Pill>{player.status}</Pill>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[1.4rem] border border-line bg-surface-strong px-4 py-4 text-sm leading-6 text-muted">
+              Todavia no hay respuestas cargadas para la proxima fecha.
+            </div>
+          )}
 
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[1.35rem] border border-line bg-background/55 px-4 py-4">
             <p className="text-sm text-muted">

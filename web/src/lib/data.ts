@@ -87,8 +87,22 @@ type PlayedMatchRow = {
   id: string;
   match_date: string;
   notes: string | null;
-  status: "played";
+  status: "played" | "closed";
 };
+
+function getCurrentIsoDateInBuenosAires() {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric",
+  });
+  const parts = formatter.formatToParts(new Date());
+  const year = parts.find((part) => part.type === "year")?.value ?? "1970";
+  const month = parts.find((part) => part.type === "month")?.value ?? "01";
+  const day = parts.find((part) => part.type === "day")?.value ?? "01";
+  return `${year}-${month}-${day}`;
+}
 
 function formatMatchDate(date: string) {
   const parsedDate = new Date(`${date}T12:00:00`);
@@ -119,6 +133,16 @@ function formatCutoffLabel(cutoffDate: Date | null) {
     minute: "2-digit",
     month: "2-digit",
   }).format(cutoffDate);
+}
+
+function getPendingLaundryDutyFallback() {
+  return {
+    assigneeName: "Se define al cierre",
+    assignmentMode: "rotation" as const,
+    dueLabel: "Se anuncia 90 min antes",
+    notes: "La Fecha asigna las camisetas cuando la convocatoria queda en lista cerrada.",
+    status: "Pendiente",
+  };
 }
 
 function mapMatchStatus(status: string) {
@@ -307,7 +331,7 @@ function buildNextMatch(
     lateDropAllowed,
     targetPlayers: match.target_players,
     timeLabel: formatMatchTime(match.start_time),
-    venue: match.location ?? "Cancha a definir",
+    venue: match.location ?? "Backyard",
   };
 }
 
@@ -350,12 +374,14 @@ async function getUpcomingMatchFromSupabase() {
     return null;
   }
 
+  const todayIso = getCurrentIsoDateInBuenosAires();
   const { data, error } = await supabase
     .from("matches")
     .select(
       "id, match_date, location, start_time, target_players, fallback_players, format_label, status, notes",
     )
     .in("status", ["scheduled", "open", "closed", "suspended"])
+    .gte("match_date", todayIso)
     .order("match_date", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -385,6 +411,40 @@ async function getUpcomingMatchFromSupabase() {
   }
 
   return typedMatch;
+}
+
+async function getOperationalMatchFromSupabase() {
+  const upcomingMatch = await getUpcomingMatchFromSupabase();
+  if (upcomingMatch) {
+    return upcomingMatch;
+  }
+
+  if (!hasSupabaseEnv()) {
+    return null;
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const todayIso = getCurrentIsoDateInBuenosAires();
+  const { data, error } = await supabase
+    .from("matches")
+    .select(
+      "id, match_date, location, start_time, target_players, fallback_players, format_label, status, notes",
+    )
+    .in("status", ["scheduled", "open", "closed", "suspended"])
+    .lte("match_date", todayIso)
+    .order("match_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data as MatchRow;
 }
 
 async function getLatestPlayedRoster(currentMatchId?: string) {
@@ -645,10 +705,12 @@ async function getPlayedMatchesFromSupabase() {
     return null;
   }
 
+  const todayIso = getCurrentIsoDateInBuenosAires();
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
     .select("id, match_date, notes, status")
-    .eq("status", "played")
+    .in("status", ["played", "closed"])
+    .lte("match_date", todayIso)
     .order("match_date", { ascending: false });
 
   if (matchesError || !matches) {
@@ -660,6 +722,7 @@ async function getPlayedMatchesFromSupabase() {
 
 async function getRealHistoryMatches() {
   const playedMatches = await getPlayedMatchesFromSupabase();
+  const todayIso = getCurrentIsoDateInBuenosAires();
 
   if (!playedMatches?.length) {
     return null;
@@ -670,6 +733,10 @@ async function getRealHistoryMatches() {
       const teamsAndGoals = await getTeamsAndGoalsForMatch(match.id);
 
       if (!teamsAndGoals) {
+        if (match.status !== "played") {
+          return null;
+        }
+
         return {
           attendance: "Datos parciales",
           date: formatMatchDate(match.match_date),
@@ -683,6 +750,15 @@ async function getRealHistoryMatches() {
         0,
       );
       const [teamA, teamB] = teamsAndGoals.matchTeams;
+      const isHistoricalClosedMatch =
+        match.status === "closed" &&
+        match.match_date <= todayIso &&
+        teamsAndGoals.matchTeams.length >= 2;
+
+      if (match.status !== "played" && !isHistoricalClosedMatch) {
+        return null;
+      }
+
       const result =
         teamA && teamB
           ? `${teamA.name} ${teamA.score} - ${teamB.score} ${teamB.name}`
@@ -703,7 +779,9 @@ async function getRealHistoryMatches() {
     }),
   );
 
-  return historyMatches;
+  return historyMatches.filter(
+    (match): match is NonNullable<(typeof historyMatches)[number]> => match !== null,
+  );
 }
 
 async function getRealLeaderboard() {
@@ -716,18 +794,33 @@ async function getRealLeaderboard() {
     return null;
   }
 
+  const historicalMatches = await getPlayedMatchesFromSupabase();
+
+  if (!historicalMatches?.length) {
+    return null;
+  }
+
+  const includedMatchIds = new Set<string>();
+
+  for (const match of historicalMatches) {
+    if (match.status === "played") {
+      includedMatchIds.add(match.id);
+      continue;
+    }
+
+    const teamsAndGoals = await getTeamsAndGoalsForMatch(match.id);
+    if (teamsAndGoals?.matchTeams.length && teamsAndGoals.matchTeams.length >= 2) {
+      includedMatchIds.add(match.id);
+    }
+  }
+
   const [
-    { data: playedMatches, error: matchesError },
     { data: participants, error: participantsError },
     { data: teams, error: teamsError },
     { data: goals, error: goalsError },
     { data: laundryAssignments, error: laundryAssignmentsError },
   ] =
     await Promise.all([
-      supabase
-        .from("matches")
-        .select("id")
-        .eq("status", "played"),
       supabase
         .from("match_participants")
         .select("match_id, player_id, attendance_status, priority_note, team_id, players(full_name)")
@@ -742,7 +835,6 @@ async function getRealLeaderboard() {
     ]);
 
   if (
-    matchesError ||
     participantsError ||
     teamsError ||
     goalsError ||
@@ -751,7 +843,6 @@ async function getRealLeaderboard() {
     return null;
   }
 
-  const playedMatchIds = new Set((playedMatches ?? []).map((match) => match.id));
   const typedParticipants = ((participants ?? []) as Array<{
     attendance_status: "played";
     match_id: string;
@@ -759,13 +850,13 @@ async function getRealLeaderboard() {
     players: { full_name?: string } | { full_name?: string }[] | null;
     priority_note: string | null;
     team_id: string | null;
-  }>).filter((participant) => playedMatchIds.has(participant.match_id));
+  }>).filter((participant) => includedMatchIds.has(participant.match_id));
   const typedTeams = (teams ?? []) as Array<{ goals: number; id: string; match_id: string }>;
   const typedGoals = ((goals ?? []) as Array<{
     is_own_goal: boolean;
     match_id: string;
     scorer_player_id: string;
-  }>).filter((goal) => playedMatchIds.has(goal.match_id));
+  }>).filter((goal) => includedMatchIds.has(goal.match_id));
   const typedLaundryAssignments = (laundryAssignments ?? []) as Array<{
     player_id: string;
     players: { full_name?: string } | { full_name?: string }[] | null;
@@ -933,11 +1024,15 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   return {
     attendanceBoard:
-      attendanceData?.attendanceBoard.length
-        ? attendanceData.attendanceBoard
-        : attendanceBoardSeed,
+      hasSupabaseEnv()
+        ? (attendanceData?.attendanceBoard ?? [])
+        : attendanceData?.attendanceBoard.length
+          ? attendanceData.attendanceBoard
+          : attendanceBoardSeed,
     leaderboard: leaderboard?.length ? leaderboard : leaderboardSeed,
-    laundryDuty: laundryDuty ?? laundryDutySeed,
+    laundryDuty:
+      laundryDuty ??
+      (hasSupabaseEnv() ? getPendingLaundryDutyFallback() : laundryDutySeed),
     navItems: navItemsSeed,
     nextMatch: buildNextMatch(upcomingMatch, attendanceData?.counts),
   };
@@ -976,41 +1071,24 @@ export async function getAvailabilityPageData(): Promise<AvailabilityPageData> {
 }
 
 export async function getMatchPageData(): Promise<MatchPageData> {
-  const latestPlayedMatch = hasSupabaseEnv()
-    ? await (async () => {
-        const supabase = getSupabaseClient();
-        if (!supabase) {
-          return null;
-        }
-
-        const { data, error } = await supabase
-          .from("matches")
-          .select("id")
-          .eq("status", "played")
-          .order("match_date", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (error || !data) {
-          return null;
-        }
-
-        return data;
-      })()
-    : null;
-  const teamsAndGoals = latestPlayedMatch
-    ? await getTeamsAndGoalsForMatch(latestPlayedMatch.id)
+  const currentMatch = await getUpcomingMatchFromSupabase();
+  const teamsAndGoals = currentMatch?.id
+    ? await getTeamsAndGoalsForMatch(currentMatch.id)
     : null;
 
   return {
     scorers:
       teamsAndGoals?.scorers.length
         ? teamsAndGoals.scorers
-        : scorersSeed,
+        : hasSupabaseEnv()
+          ? []
+          : scorersSeed,
     teams:
       teamsAndGoals?.matchTeams.length
         ? teamsAndGoals.matchTeams
-        : teamsSeed,
+        : hasSupabaseEnv()
+          ? []
+          : teamsSeed,
   };
 }
 
@@ -1035,7 +1113,7 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
 }
 
 export async function getAdminPageData(): Promise<AdminPageData> {
-  const upcomingMatch = await getUpcomingMatchFromSupabase();
+  const upcomingMatch = await getOperationalMatchFromSupabase();
   const attendanceData = upcomingMatch
     ? await getAttendanceForMatch(upcomingMatch.id)
     : null;
@@ -1056,11 +1134,13 @@ export async function getAdminPageData(): Promise<AdminPageData> {
     backups: currentMatch.substitutes,
     confirmed: currentMatch.confirmed,
     declined: 0,
-    totalResponses: attendanceBoardSeed.length,
+    totalResponses: hasSupabaseEnv() ? 0 : attendanceBoardSeed.length,
   };
   const projectedBoard = buildProjectedAttendanceBoard({
     previousPlayers: previousRoster ?? [],
-    responses: attendanceData?.fullAttendanceBoard ?? attendanceBoardSeed,
+    responses:
+      attendanceData?.fullAttendanceBoard ??
+      (hasSupabaseEnv() ? [] : attendanceBoardSeed),
     targetPlayers: currentMatch.targetPlayers,
   });
 

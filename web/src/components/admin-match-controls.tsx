@@ -33,7 +33,7 @@ export function AdminMatchControls({ currentMatch }: { currentMatch: NextMatch }
   );
 
   return (
-    <SectionCard eyebrow="Estado real" title="Control del partido">
+    <SectionCard eyebrow="Estado real" title="Control del partido" collapsible>
       <form action={formAction} className="grid gap-4">
         <input type="hidden" name="matchId" value={currentMatch.id ?? ""} />
 
@@ -54,13 +54,13 @@ export function AdminMatchControls({ currentMatch }: { currentMatch: NextMatch }
           <select
             name="status"
             defaultValue={currentMatch.rawStatus ?? "scheduled"}
-            className="rounded-[1.2rem] border border-line bg-surface-strong px-4 py-4 text-base font-semibold outline-none transition focus:border-foreground"
+            className="rounded-[1.2rem] border border-line bg-[#101a2b] px-4 py-4 text-base font-semibold text-white outline-none transition focus:border-foreground"
           >
-            <option value="scheduled">Programado</option>
-            <option value="open">Convocatoria abierta</option>
-            <option value="closed">Lista cerrada</option>
-            <option value="suspended">Partido suspendido</option>
-            <option value="played">Partido jugado</option>
+            <option value="scheduled" className="bg-[#101a2b] text-white">Programado</option>
+            <option value="open" className="bg-[#101a2b] text-white">Convocatoria abierta</option>
+            <option value="closed" className="bg-[#101a2b] text-white">Lista cerrada</option>
+            <option value="suspended" className="bg-[#101a2b] text-white">Partido suspendido</option>
+            <option value="played" className="bg-[#101a2b] text-white">Partido jugado</option>
           </select>
         </label>
 

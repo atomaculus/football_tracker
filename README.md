@@ -19,8 +19,10 @@ This app replaces that Excel. It handles the full weekly operation - attendance,
 - **Team assignment** - assign players to teams before the match
 - **Match result** - log final score and goalscorers
 - **Match history** - full record of past games with results and stats
-- **Player management** - admin panel to manage the group roster
-- **Admin controls** - open, close, or suspend a match week
+- **Player roster** - a clean roster view for active, inactive, and admin players
+- **Admin controls** - open, close, or suspend a match week, with compact collapsible sections
+- **Laundry logistics** - automatic shirt assignment on list closure plus manual admin override
+- **Weekly automation** - match week opens automatically on Sunday at 10:00 and closes 90 minutes before kickoff
 
 ---
 
@@ -61,7 +63,7 @@ The app is designed mobile-first because the real use case is players opening it
 
 ## Status
 
-This project is already functional for real weekly use and keeps evolving around three priorities: cleaner admin workflows, more reliable scheduling, and better historical stats.
+This project is already functional for real weekly use. The current version includes a stabilized admin workflow for closing a real match, saving attendance in bulk, assigning teams in bulk, recording goals by quantity, and showing real match data across home, match, and history views. Current focus has shifted to importing more historical data and handling guest players more cleanly.
 
 ---
 

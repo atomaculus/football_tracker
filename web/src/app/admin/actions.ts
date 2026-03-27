@@ -32,6 +32,11 @@ export type MatchResultAdminActionState = {
   status: "idle" | "success" | "error" | "demo";
 };
 
+export type LaundryAdminActionState = {
+  message: string;
+  status: "idle" | "success" | "error" | "demo";
+};
+
 type MatchAdminRow = {
   match_date: string;
   start_time: string | null;
@@ -103,6 +108,62 @@ async function getMatchTeams(matchId: string) {
   }
 
   return { data, error: false };
+}
+
+async function saveTeamRow(
+  matchId: string,
+  team: {
+    color: string;
+    goals: number;
+    id?: string;
+    name: string;
+  },
+) {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { error: true, message: "No se pudo conectar con Supabase." };
+  }
+
+  if (team.id) {
+    const { error } = await supabase
+      .from("teams")
+      .update({
+        color: team.color,
+        goals: team.goals,
+        name: team.name,
+      })
+      .eq("id", team.id)
+      .eq("match_id", matchId);
+
+    if (error) {
+      return {
+        error: true,
+        message: `No se pudo actualizar el equipo ${team.name}: ${error.message}`,
+      };
+    }
+
+    return { error: false, message: "" };
+  }
+
+  const { error } = await supabase.from("teams").insert({
+    color: team.color,
+    goals: team.goals,
+    match_id: matchId,
+    name: team.name,
+  });
+
+  if (error) {
+    return {
+      error: true,
+      message: `No se pudo crear el equipo ${team.name}: ${error.message}`,
+    };
+  }
+
+  return { error: false, message: "" };
+}
+
+function buildLaundryOverrideNotes(playerName: string) {
+  return `${playerName} se lleva las camisetas por override manual del admin.`;
 }
 
 export async function updateMatchStatus(
@@ -476,6 +537,108 @@ export async function updateMatchParticipantStatusByAdmin(
   };
 }
 
+export async function updateMatchParticipantStatusesByAdmin(
+  _previousState: ParticipantAdminActionState,
+  formData: FormData,
+): Promise<ParticipantAdminActionState> {
+  await requireAdminSession("/admin");
+  const matchId = String(formData.get("matchId") ?? "");
+
+  if (!matchId) {
+    return {
+      message: "Falta el partido para registrar la asistencia real.",
+      status: "error",
+    };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return {
+      message: "La carga final queda activa cuando la app usa Supabase real.",
+      status: "demo",
+    };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return {
+      message: "No se pudo conectar con Supabase.",
+      status: "error",
+    };
+  }
+
+  const { data: match, error: matchError } = await supabase
+    .from("matches")
+    .select("status")
+    .eq("id", matchId)
+    .maybeSingle<{ status: MatchAdminRow["status"] }>();
+
+  if (matchError || !match) {
+    return {
+      message: "No se encontro el partido para registrar la asistencia real.",
+      status: "error",
+    };
+  }
+
+  if (!["closed", "played"].includes(match.status)) {
+    return {
+      message: "La asistencia real se carga una vez cerrada la convocatoria.",
+      status: "error",
+    };
+  }
+
+  const updates = Array.from(formData.entries())
+    .filter(([key]) => key.startsWith("attendanceStatus:"))
+    .map(([key, value]) => {
+      const playerId = key.replace("attendanceStatus:", "");
+      const attendanceStatus = String(value);
+
+      return {
+        attendance_status: attendanceStatus,
+        player_id: playerId,
+      };
+    });
+
+  if (!updates.length) {
+    return {
+      message: "No hay cambios de asistencia final para guardar.",
+      status: "error",
+    };
+  }
+
+  for (const update of updates) {
+    if (!["confirmed", "played", "late_cancel", "no_show"].includes(update.attendance_status)) {
+      return {
+        message: "Hay un estado final invalido en la lista.",
+        status: "error",
+      };
+    }
+  }
+
+  for (const update of updates) {
+    const { error } = await supabase
+      .from("match_participants")
+      .update({ attendance_status: update.attendance_status })
+      .eq("match_id", matchId)
+      .eq("player_id", update.player_id);
+
+    if (error) {
+      return {
+        message: "No se pudo guardar la asistencia final.",
+        status: "error",
+      };
+    }
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/confirmar");
+
+  return {
+    message: `Asistencia final actualizada para ${updates.length} jugadores.`,
+    status: "success",
+  };
+}
+
 export async function saveMatchTeamsByAdmin(
   _previousState: MatchResultAdminActionState,
   formData: FormData,
@@ -513,28 +676,39 @@ export async function saveMatchTeamsByAdmin(
     };
   }
 
-  const upserts = [
+  const existingTeamsResult = await getMatchTeams(matchId);
+  if (existingTeamsResult.error) {
+    return {
+      message: "No se pudo leer el estado actual de los equipos.",
+      status: "error",
+    };
+  }
+
+  const existingTeams = existingTeamsResult.data ?? [];
+  const claimedIds = new Set([teamAId, teamBId].filter(Boolean));
+  const unclaimedExistingTeams = existingTeams.filter((team) => !claimedIds.has(team.id));
+
+  const teamsToSave = [
     {
       color: teamAColor,
       goals: Number.isFinite(teamAGoals) ? teamAGoals : 0,
-      id: teamAId || undefined,
-      match_id: matchId,
+      id: teamAId || unclaimedExistingTeams[0]?.id,
       name: teamAName,
     },
     {
       color: teamBColor,
       goals: Number.isFinite(teamBGoals) ? teamBGoals : 0,
-      id: teamBId || undefined,
-      match_id: matchId,
+      id: teamBId || unclaimedExistingTeams[1]?.id,
       name: teamBName,
     },
   ];
 
-  const { error } = await supabase.from("teams").upsert(upserts);
+  const saveResults = await Promise.all(teamsToSave.map((team) => saveTeamRow(matchId, team)));
+  const failedSave = saveResults.find((result) => result.error);
 
-  if (error) {
+  if (failedSave) {
     return {
-      message: "No se pudieron guardar los equipos.",
+      message: failedSave.message,
       status: "error",
     };
   }
@@ -597,6 +771,73 @@ export async function assignParticipantTeamByAdmin(
 
   return {
     message: "Equipo actualizado.",
+    status: "success",
+  };
+}
+
+export async function assignParticipantTeamsByAdmin(
+  _previousState: MatchResultAdminActionState,
+  formData: FormData,
+): Promise<MatchResultAdminActionState> {
+  await requireAdminSession("/admin");
+  const matchId = String(formData.get("matchId") ?? "");
+
+  if (!matchId) {
+    return {
+      message: "Falta el partido para asignar equipos.",
+      status: "error",
+    };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return {
+      message: "La asignacion de equipos queda activa cuando la app usa Supabase real.",
+      status: "demo",
+    };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return {
+      message: "No se pudo conectar con Supabase.",
+      status: "error",
+    };
+  }
+
+  const assignments = Array.from(formData.entries())
+    .filter(([key]) => key.startsWith("teamId:"))
+    .map(([key, value]) => ({
+      player_id: key.replace("teamId:", ""),
+      team_id: String(value) || null,
+    }));
+
+  if (!assignments.length) {
+    return {
+      message: "No hay asignaciones de equipo para guardar.",
+      status: "error",
+    };
+  }
+
+  for (const assignment of assignments) {
+    const { error } = await supabase
+      .from("match_participants")
+      .update({ team_id: assignment.team_id })
+      .eq("match_id", matchId)
+      .eq("player_id", assignment.player_id);
+
+    if (error) {
+      return {
+        message: "No se pudo guardar la asignacion de equipos.",
+        status: "error",
+      };
+    }
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/partido");
+
+  return {
+    message: `Equipos asignados para ${assignments.length} jugadores.`,
     status: "success",
   };
 }
@@ -702,6 +943,78 @@ export async function deleteGoalByAdmin(
 
   return {
     message: "Gol eliminado.",
+    status: "success",
+  };
+}
+
+export async function overrideLaundryAssignmentByAdmin(
+  _previousState: LaundryAdminActionState,
+  formData: FormData,
+): Promise<LaundryAdminActionState> {
+  await requireAdminSession("/admin");
+  const matchId = String(formData.get("matchId") ?? "");
+  const playerId = String(formData.get("playerId") ?? "");
+
+  if (!matchId || !playerId) {
+    return {
+      message: "Falta el partido o el jugador para reasignar las camisetas.",
+      status: "error",
+    };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return {
+      message: "El override de camisetas queda activo cuando la app usa Supabase real.",
+      status: "demo",
+    };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return {
+      message: "No se pudo conectar con Supabase.",
+      status: "error",
+    };
+  }
+
+  const { data: player, error: playerError } = await supabase
+    .from("players")
+    .select("full_name")
+    .eq("id", playerId)
+    .maybeSingle<{ full_name: string }>();
+
+  if (playerError || !player) {
+    return {
+      message: "No se pudo leer el jugador para reasignar las camisetas.",
+      status: "error",
+    };
+  }
+
+  const { error } = await supabase.from("laundry_assignments").upsert(
+    {
+      assignment_mode: "rotation",
+      kit_notes: buildLaundryOverrideNotes(player.full_name),
+      match_id: matchId,
+      player_id: playerId,
+      status: "reassigned",
+    },
+    {
+      onConflict: "match_id",
+    },
+  );
+
+  if (error) {
+    return {
+      message: "No se pudo guardar el override de camisetas.",
+      status: "error",
+    };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+
+  return {
+    message: `Camisetas reasignadas a ${player.full_name}.`,
     status: "success",
   };
 }

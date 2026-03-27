@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import { AdminAttendanceManager } from "@/components/admin-attendance-manager";
 import { AdminFinalRosterManager } from "@/components/admin-final-roster-manager";
+import { AdminLaundryOverrideManager } from "@/components/admin-laundry-override-manager";
 import { AdminMatchControls } from "@/components/admin-match-controls";
 import { AdminMatchResultManager } from "@/components/admin-match-result-manager";
 import { Pill, SectionCard } from "@/components/ui";
@@ -32,10 +33,10 @@ export default async function AdminPage() {
       nextMatch={nextMatch}
       viewer={viewer}
     >
-      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <AdminMatchControls currentMatch={currentMatch} />
 
-        <SectionCard eyebrow="Lectura real" title="Pulso operativo">
+        <SectionCard eyebrow="Lectura real" title="Pulso operativo" collapsible>
           <div className="grid gap-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-[1.4rem] border border-lime/20 bg-lime/[0.08] p-4">
@@ -98,7 +99,7 @@ export default async function AdminPage() {
         />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+      <section className="grid items-start gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <AdminFinalRosterManager
           currentMatchId={currentMatch.id}
           editable={currentMatch.rawStatus === "closed" || currentMatch.rawStatus === "played"}
@@ -115,7 +116,7 @@ export default async function AdminPage() {
       </section>
 
       <section className="grid gap-6">
-        <SectionCard eyebrow="Camisetas" title="Encargado de lavado">
+        <SectionCard eyebrow="Camisetas" title="Encargado de lavado" collapsible>
           <div className="rounded-[1.5rem] border border-line bg-surface-strong p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -139,6 +140,11 @@ export default async function AdminPage() {
                 <p className="mt-2 text-lg font-black">{laundryDuty.dueLabel}</p>
               </div>
             </div>
+            <AdminLaundryOverrideManager
+              currentAssigneeName={laundryDuty.assigneeName}
+              currentMatchId={currentMatch.id}
+              participants={actualParticipants}
+            />
           </div>
         </SectionCard>
       </section>

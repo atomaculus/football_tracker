@@ -72,19 +72,19 @@ function AttendanceRow({
           name="response"
           defaultValue={defaultValue}
           disabled={!canEditThisRow || !matchId || !entry.playerId}
-          className="w-full rounded-[1rem] border border-white/12 bg-white/8 px-4 py-3 text-sm font-semibold text-white outline-none transition focus:border-white/40 sm:w-auto sm:min-w-[12rem] disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-[1rem] border border-white/12 bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white outline-none transition focus:border-white/40 sm:w-auto sm:min-w-[12rem] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {!isLateDropOnlyMode ? (
-            <option value="going" className="text-foreground">
+            <option value="going" className="bg-[#101a2b] text-white">
               Titular
             </option>
           ) : null}
           {!isLateDropOnlyMode ? (
-            <option value="backup" className="text-foreground">
+            <option value="backup" className="bg-[#101a2b] text-white">
               Suplente
             </option>
           ) : null}
-          <option value="not_going" className="text-foreground">
+          <option value="not_going" className="bg-[#101a2b] text-white">
             No va
           </option>
         </select>
@@ -127,8 +127,16 @@ export function AdminAttendanceManager({
   projectedStarters: number;
   projectedSubstitutes: number;
 }) {
+  const isLateDropOnlyMode = !editable && lateDropAllowed;
+  const visibleEntries = isLateDropOnlyMode
+    ? attendanceBoard.filter((entry) =>
+        entry.responseValue === "going" || entry.responseValue === "backup",
+      )
+    : attendanceBoard;
+  const title = isLateDropOnlyMode ? "Bajas tardias de la lista cerrada" : "Jugadores de esta fecha";
+
   return (
-    <SectionCard eyebrow="Lista operativa" title="Jugadores de esta fecha" dark>
+    <SectionCard eyebrow="Lista operativa" title={title} dark collapsible>
       <div className="mb-5 flex flex-wrap gap-2">
         <Pill tone="lime">{projectedStarters} titulares proyectados</Pill>
         <Pill tone="accent">{projectedSubstitutes} suplentes proyectados</Pill>
@@ -141,7 +149,8 @@ export function AdminAttendanceManager({
         </div>
       ) : !editable && lateDropAllowed ? (
         <div className="rounded-[1.2rem] border border-white/10 bg-white/6 px-4 py-3 text-sm leading-6 text-white/78">
-          La lista ya cerro para nuevas altas. Desde admin solo conviene marcar bajas tardias.
+          La convocatoria ya cerro. Esta seccion ya no sirve para sumar gente ni para cerrar
+          asistencia real: solo permite marcar bajas tardias de jugadores que estaban anotados.
         </div>
       ) : !editable ? (
         <div className="rounded-[1.2rem] border border-white/10 bg-white/6 px-4 py-3 text-sm leading-6 text-white/78">
@@ -150,7 +159,7 @@ export function AdminAttendanceManager({
       ) : null}
 
       <div className="space-y-3">
-        {attendanceBoard.map((entry) => (
+        {visibleEntries.map((entry) => (
           <AttendanceRow
             key={`${entry.playerId ?? entry.name}-${entry.detail}`}
             entry={entry}

@@ -63,15 +63,18 @@ Capacidades actuales:
 - home responsive del MVP
 - confirmacion de asistencia persistida
 - bajas tardias despues del cierre
-- pantalla de partido
-- historial real basico
-- lista de jugadores del grupo
-- panel admin operativo
+- pantalla de partido para la fecha operativa actual
+- historial real con partidos cerrados o jugados ya completados
+- lista de jugadores del grupo simplificada como roster
+- panel admin operativo con secciones colapsables
 - cierre real de convocatoria
-- cierre automatico por scheduler
-- carga de asistencia real del partido
-- carga de equipos, resultado y goles
+- apertura automatica de convocatoria el domingo a las `10:00`
+- cierre automatico por scheduler `90 minutos` antes del partido
+- carga de asistencia real del partido con guardado masivo
+- carga de equipos, resultado y asignacion por bloque
+- carga de goles por cantidad, no por minuto
 - asignacion real de camisetas al cerrar convocatoria
+- override manual del responsable de camisetas desde admin
 - estadistica de `lavados` por jugador
 - capa de datos conectada a Supabase
 - fallback local con seed data si faltan credenciales o datos
@@ -116,6 +119,10 @@ Frontend:
 - se convirtio la barra superior en navegacion sticky compacta
 - se compactaron textos y bloques del home
 - se reforzo responsive en home, historial, jugadores, partido y admin
+- se agrego `collapse` por seccion en el panel admin
+- se paso de acciones por fila a guardados masivos en asistencia final y asignacion de equipos
+- se corrigio contraste de `select` y formularios del admin
+- se simplifico `/jugadores` para que funcione como roster y no como duplicado de historial
 
 Datos y backend:
 
@@ -129,12 +136,17 @@ Datos y backend:
 - se habilito cierre de convocatoria y operacion admin real
 - se habilito carga de equipos y goles
 - se implemento cierre automatico persistido y asignacion real de camisetas
+- se habilito apertura automatica de convocatoria por scheduler
+- se ajusto el dashboard para no mezclar seed con datos reales cuando no existe proxima fecha
+- se ajusto historial y leaderboard para considerar fechas cerradas pero ya completadas
+- se dejo `/partido` atado a la fecha operativa actual y vacio si no hay datos reales
 
 Infra:
 
 - se agrego workflow `Close Signups` en GitHub Actions
 - se agrego endpoint protegido por `CRON_SECRET`
 - se valido ejecucion manual del workflow
+- el mismo scheduler ahora tambien abre la fecha el domingo a las `10:00`
 
 ## Commits relevantes
 
@@ -228,19 +240,22 @@ Lo que ya funciona con datos reales:
 - lectura del proximo `match`
 - lectura de respuestas de asistencia
 - submit de confirmacion de asistencia
+- apertura automatica de convocatoria el domingo a las `10:00`
 - cierre manual de convocatoria
 - cierre automatico disparado por scheduler
 - carga de participantes reales
 - carga de equipos
 - carga de goles
 - asignacion real de camisetas
-- historial y ranking basico
+- override manual del lavado
+- historial y ranking basico con fechas completas
 - metrica de lavados por jugador
 
 Lo que sigue parcial o con fallback:
 
-- `/partido` cuando falta estructura real de `teams` o `goals`
-- devolucion y override fino de camisetas
+- invitados externos no modelados de punta a punta
+- importacion historica mas amplia del Excel
+- devolucion fina de camisetas
 - algunas estadisticas finas atadas a datos historicos mas completos
 - auth final por OTP o magic link
 
@@ -248,10 +263,10 @@ Lo que sigue parcial o con fallback:
 
 Orden recomendado para seguir sin perder foco:
 
-1. compactar UX del panel admin para operacion semanal
-2. revisar bugs visibles y friccion del admin en uso real
-3. mejorar `/partido` cuando falten datos reales
-4. completar el flujo de camisetas con devolucion y overrides
+1. importar historico 2026 desde Excel
+2. resolver soporte real para invitados en una fecha jugada
+3. completar el flujo de camisetas con devolucion
+4. revisar si conviene separar mas `/jugadores` de vistas admin futuras
 5. evaluar si conviene subir la auth del MVP a OTP despues del uso real
 
 ## Consideraciones importantes para otra instancia
@@ -264,10 +279,15 @@ Orden recomendado para seguir sin perder foco:
 - no modelar formatos desbalanceados tipo `7 vs 5`
 - mantener la regla operativa `14 => 7v7`, `12 => 6v6`, `<12 => suspendido`
 - la asignacion de camisetas ya no es demo: se persiste en `laundry_assignments`
+- la home no debe inventar respuestas si no hay proxima fecha real en Supabase
+- `/partido` debe mostrar la fecha operativa actual, no arrastrar automaticamente la ultima jugada
 - si aparece un lock de `.next/dev/lock`, probablemente haya quedado un `next dev` viejo corriendo
 
 ## Ultimo hito conocido
 
-Ultimo commit visible al actualizar este archivo:
+Ultimo hito funcional al actualizar este archivo:
 
-- `f2111e0` `Fix match closure typing for production build`
+- panel admin consolidado con guardados masivos
+- apertura automatica el domingo a las `10:00`
+- override manual de camisetas
+- home, historial y partido alineados con el estado real de Supabase

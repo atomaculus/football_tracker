@@ -28,7 +28,7 @@ function getTargetDate(isoDate?: string, isoTime?: string) {
   }
 
   const time = normalizeTime(isoTime);
-  const parsedDate = new Date(`${isoDate}T${time}`);
+  const parsedDate = new Date(`${isoDate}T${time}-03:00`);
 
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 }

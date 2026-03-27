@@ -66,6 +66,23 @@ export function getSignupCutoffDate(matchDate?: string, startTime?: string | nul
   return new Date(matchStart.getTime() - 90 * 60 * 1000);
 }
 
+export function getSignupOpeningDate(matchDate?: string) {
+  if (!matchDate) {
+    return null;
+  }
+
+  const openingDate = new Date(`${matchDate}T10:00:00-03:00`);
+
+  if (Number.isNaN(openingDate.getTime())) {
+    return null;
+  }
+
+  const daysBackToSunday = (openingDate.getDay() + 7) % 7 || 7;
+  openingDate.setDate(openingDate.getDate() - daysBackToSunday);
+
+  return openingDate;
+}
+
 async function getLatestPlayedRoster(
   supabase: SupabaseClient,
   matchId: string,
@@ -430,6 +447,53 @@ export async function ensureMatchClosureIfNeeded(
     error: Boolean(refreshedMatchError),
     match: refreshedMatchError ? typedMatch : ((refreshedMatch as MatchLifecycleRow | null) ?? typedMatch),
     message: finalizeResult.message,
+  };
+}
+
+export async function ensureMatchOpeningIfNeeded(
+  supabase: SupabaseClient,
+  matchId: string,
+): Promise<{ error: boolean; match: MatchLifecycleRow | null; message?: string }> {
+  const { data: initialMatch, error: initialMatchError } = await supabase
+    .from("matches")
+    .select("id, match_date, start_time, status, target_players")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (initialMatchError || !initialMatch) {
+    return { error: true, match: null, message: "No se pudo leer el partido programado." };
+  }
+
+  const typedMatch = initialMatch as MatchLifecycleRow;
+
+  if (typedMatch.status !== "scheduled") {
+    return { error: false, match: typedMatch };
+  }
+
+  const openingDate = getSignupOpeningDate(typedMatch.match_date);
+  if (openingDate && Date.now() < openingDate.getTime()) {
+    return { error: false, match: typedMatch };
+  }
+
+  const { error: openError } = await supabase
+    .from("matches")
+    .update({ status: "open" })
+    .eq("id", matchId);
+
+  if (openError) {
+    return { error: true, match: typedMatch, message: "No se pudo abrir la convocatoria por horario." };
+  }
+
+  const { data: refreshedMatch, error: refreshedMatchError } = await supabase
+    .from("matches")
+    .select("id, match_date, start_time, status, target_players")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  return {
+    error: Boolean(refreshedMatchError),
+    match: refreshedMatchError ? typedMatch : ((refreshedMatch as MatchLifecycleRow | null) ?? typedMatch),
+    message: "Convocatoria abierta automaticamente el domingo a las 10:00.",
   };
 }
 

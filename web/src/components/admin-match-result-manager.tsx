@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 
 import {
   addGoalByAdmin,
-  assignParticipantTeamByAdmin,
+  assignParticipantTeamsByAdmin,
   deleteGoalByAdmin,
   saveMatchTeamsByAdmin,
   type MatchResultAdminActionState,
@@ -54,50 +54,38 @@ function ActionMessage({ state }: { state: MatchResultAdminActionState }) {
 
 function TeamAssignmentRow({
   entry,
-  matchId,
   teams,
 }: {
   entry: MatchParticipantEntry;
-  matchId?: string;
   teams: Team[];
 }) {
-  const [actionState, formAction] = useActionState(
-    assignParticipantTeamByAdmin,
-    initialMatchResultAdminActionState,
-  );
-
   return (
-    <form action={formAction} className="rounded-[1.2rem] border border-white/[0.1] bg-white/[0.06] p-4">
-      <input type="hidden" name="matchId" value={matchId ?? ""} />
-      <input type="hidden" name="playerId" value={entry.playerId} />
-
+    <div className="rounded-[1.2rem] border border-white/[0.1] bg-white/[0.06] p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-extrabold">{entry.name}</p>
           <p className="text-sm text-muted">
-            {entry.role === "starter" ? "Titular" : "Suplente"} · {entry.attendanceStatus}
+            {entry.role === "starter" ? "Titular" : "Suplente"} - {entry.attendanceStatus}
           </p>
         </div>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           <select
-            name="teamId"
+            name={`teamId:${entry.playerId}`}
             defaultValue={entry.teamId ?? ""}
-            className="w-full rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none transition focus:border-accent/40 sm:min-w-[12rem]"
+            className="w-full rounded-[1rem] border border-white/[0.1] bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white outline-none transition focus:border-accent/40 sm:min-w-[12rem]"
           >
-            <option value="">Sin equipo</option>
+            <option value="" className="bg-[#101a2b] text-white">
+              Sin equipo
+            </option>
             {teams.map((team) => (
-              <option key={team.id} value={team.id}>
+              <option key={team.id} value={team.id} className="bg-[#101a2b] text-white">
                 {team.name}
               </option>
             ))}
           </select>
-          <SubmitButton disabled={!matchId || teams.length < 2} label="Asignar" />
         </div>
       </div>
-      <div className="mt-3">
-        <ActionMessage state={actionState} />
-      </div>
-    </form>
+    </div>
   );
 }
 
@@ -117,8 +105,7 @@ function DeleteGoalRow({ goal }: { goal: GoalEntry }) {
         <p className="font-extrabold">{goal.scorerName}</p>
         <p className="text-sm text-muted">
           {goal.teamName}
-          {goal.minute ? ` · ${goal.minute}'` : ""}
-          {goal.isOwnGoal ? " · en contra" : ""}
+          {goal.isOwnGoal ? " - en contra" : ""}
         </p>
       </div>
       <SubmitButton label="Eliminar" />
@@ -144,6 +131,10 @@ export function AdminMatchResultManager({
     saveMatchTeamsByAdmin,
     initialMatchResultAdminActionState,
   );
+  const [assignmentsState, saveAssignmentsAction] = useActionState(
+    assignParticipantTeamsByAdmin,
+    initialMatchResultAdminActionState,
+  );
   const [goalsState, addGoalAction] = useActionState(
     addGoalByAdmin,
     initialMatchResultAdminActionState,
@@ -151,11 +142,11 @@ export function AdminMatchResultManager({
   const teamA = teams[0];
   const teamB = teams[1];
   const playableParticipants = participants.filter((participant) =>
-    ["confirmed", "played", "no_show"].includes(participant.attendanceStatus),
+    ["confirmed", "played"].includes(participant.attendanceStatus),
   );
 
   return (
-    <SectionCard eyebrow="Resultado" title="Equipos y goles">
+    <SectionCard eyebrow="Resultado" title="Equipos y goles" collapsible>
       {!matchId ? (
         <div className="rounded-[1.2rem] border border-line bg-surface-strong px-4 py-3 text-sm leading-6 text-muted">
           No hay un partido activo para cargar resultado.
@@ -186,12 +177,23 @@ export function AdminMatchResultManager({
                 <select
                   name="teamAColor"
                   defaultValue={teamA?.color ?? "bg-lime text-foreground"}
-                  className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
+                  className="rounded-[1rem] border border-white/[0.1] bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white outline-none focus:border-accent/40"
                 >
-                  <option value="bg-lime text-foreground">Verde</option>
-                  <option value="bg-accent text-white">Naranja</option>
-                  <option value="bg-[#0f3b2a] text-white">Bosque</option>
-                  <option value="bg-[#f3e6cf] text-foreground">Crema</option>
+                  <option value="bg-lime text-foreground" className="bg-[#101a2b] text-white">
+                    Verde
+                  </option>
+                  <option value="bg-accent text-white" className="bg-[#101a2b] text-white">
+                    Naranja
+                  </option>
+                  <option value="bg-[#0f3b2a] text-white" className="bg-[#101a2b] text-white">
+                    Bosque
+                  </option>
+                  <option
+                    value="bg-[#f3e6cf] text-foreground"
+                    className="bg-[#101a2b] text-white"
+                  >
+                    Crema
+                  </option>
                 </select>
                 <input
                   type="number"
@@ -214,12 +216,23 @@ export function AdminMatchResultManager({
                 <select
                   name="teamBColor"
                   defaultValue={teamB?.color ?? "bg-accent text-white"}
-                  className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
+                  className="rounded-[1rem] border border-white/[0.1] bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white outline-none focus:border-accent/40"
                 >
-                  <option value="bg-accent text-white">Naranja</option>
-                  <option value="bg-lime text-foreground">Verde</option>
-                  <option value="bg-[#101010] text-white">Negro</option>
-                  <option value="bg-[#f3e6cf] text-foreground">Crema</option>
+                  <option value="bg-accent text-white" className="bg-[#101a2b] text-white">
+                    Naranja
+                  </option>
+                  <option value="bg-lime text-foreground" className="bg-[#101a2b] text-white">
+                    Verde
+                  </option>
+                  <option value="bg-[#101010] text-white" className="bg-[#101a2b] text-white">
+                    Negro
+                  </option>
+                  <option
+                    value="bg-[#f3e6cf] text-foreground"
+                    className="bg-[#101a2b] text-white"
+                  >
+                    Crema
+                  </option>
                 </select>
                 <input
                   type="number"
@@ -239,7 +252,11 @@ export function AdminMatchResultManager({
             <ActionMessage state={teamsState} />
           </form>
 
-          <div className="grid gap-4 rounded-[1.5rem] border border-line bg-surface-strong p-5">
+          <form
+            action={saveAssignmentsAction}
+            className="grid gap-4 rounded-[1.5rem] border border-line bg-surface-strong p-5"
+          >
+            <input type="hidden" name="matchId" value={matchId} />
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
@@ -258,15 +275,17 @@ export function AdminMatchResultManager({
 
             <div className="space-y-3">
               {playableParticipants.map((entry) => (
-                <TeamAssignmentRow
-                  key={entry.playerId}
-                  entry={entry}
-                  matchId={matchId}
-                  teams={teams}
-                />
+                <TeamAssignmentRow key={entry.playerId} entry={entry} teams={teams} />
               ))}
             </div>
-          </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-muted">
+                Ajusta todos los equipos y despues guarda la asignacion completa.
+              </p>
+              <SubmitButton disabled={!matchId || teams.length < 2} label="Guardar asignacion" />
+            </div>
+            <ActionMessage state={assignmentsState} />
+          </form>
 
           <form
             action={addGoalAction}
@@ -276,26 +295,30 @@ export function AdminMatchResultManager({
 
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">Goles</p>
-              <p className="mt-1 text-lg font-black">Registrar gol</p>
+              <p className="mt-1 text-lg font-black">Registrar goles</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-[1fr_1fr_120px_auto]">
               <select
                 name="scorerPlayerId"
-                className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
+                className="rounded-[1rem] border border-white/[0.1] bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white outline-none focus:border-accent/40"
               >
                 {playableParticipants.map((participant) => (
-                  <option key={participant.playerId} value={participant.playerId}>
+                  <option
+                    key={participant.playerId}
+                    value={participant.playerId}
+                    className="bg-[#101a2b] text-white"
+                  >
                     {participant.name}
                   </option>
                 ))}
               </select>
               <select
                 name="teamId"
-                className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
+                className="rounded-[1rem] border border-white/[0.1] bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white outline-none focus:border-accent/40"
               >
                 {teams.map((team) => (
-                  <option key={team.id} value={team.id}>
+                  <option key={team.id} value={team.id} className="bg-[#101a2b] text-white">
                     {team.name}
                   </option>
                 ))}
@@ -303,15 +326,16 @@ export function AdminMatchResultManager({
               <input
                 type="number"
                 min="1"
-                max="120"
-                name="minute"
-                className="rounded-[1rem] border border-white/[0.1] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-accent/40"
-                placeholder="Min"
+                max="20"
+                name="goalCount"
+                defaultValue={1}
+                className="rounded-[1rem] border border-white/[0.1] bg-[#101a2b] px-4 py-3 text-sm font-semibold text-white outline-none focus:border-accent/40"
+                placeholder="Goles"
               />
               <div className="w-full md:w-auto">
                 <SubmitButton
                   disabled={!teams.length || !playableParticipants.length}
-                  label="Cargar gol"
+                  label="Cargar goles"
                 />
               </div>
             </div>

@@ -12,19 +12,46 @@ import type {
   Team,
 } from "@/types/domain";
 
+function getNextTuesdaySeedDate() {
+  const now = new Date();
+  const seedDate = new Date(now);
+  const currentDay = seedDate.getDay();
+  const daysUntilTuesday = (2 - currentDay + 7) % 7 || 7;
+  seedDate.setDate(seedDate.getDate() + daysUntilTuesday);
+  return seedDate;
+}
+
+function formatSeedMatchDate(date: Date) {
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "numeric",
+    month: "long",
+    weekday: "long",
+    timeZone: "America/Argentina/Buenos_Aires",
+  }).format(date);
+}
+
+function formatSeedIsoDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+const seedNextTuesday = getNextTuesdaySeedDate();
+
 export const nextMatchSeed: NextMatch = {
-  dateLabel: "Martes 24 de marzo",
-  isoDate: "2026-03-24",
+  dateLabel: formatSeedMatchDate(seedNextTuesday),
+  isoDate: formatSeedIsoDate(seedNextTuesday),
   isoTime: "19:00:00",
   timeLabel: "19:00",
   venue: "Backyard",
   format: "7v7",
   targetPlayers: 14,
   fallbackPlayers: 12,
-  status: "Convocatoria abierta",
-  confirmed: 11,
-  substitutes: 2,
-  missing: 3,
+  status: "Proxima fecha",
+  confirmed: 0,
+  substitutes: 0,
+  missing: 14,
 };
 
 export const attendanceBoardSeed: AttendanceEntry[] = [
